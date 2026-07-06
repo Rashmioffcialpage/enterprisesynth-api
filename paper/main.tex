@@ -1,0 +1,184 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\title{EnterpriseSynth: Agentic SFT and Eval Data from API Schemas Without Live Execution}
+\author{Rashmi Thimmaraju}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Enterprise adoption of autonomous Large Language Model (LLM) agents is severely bottlenecked by
+the data cold-start problem. Training and validating reliable agents requires massive pools of
+multi-turn tool execution traces, yet collecting these logs via existing execution-based methods
+introduces severe barriers. Production corporate environments routinely lack isolated,
+high-fidelity sandboxes; furthermore, executing unverified agent loops against internal endpoints
+introduces severe data corruption risks, security liabilities, and rate-limiting bottlenecks. We
+present \textbf{EnterpriseSynth}, a zero-execution framework that ingests abstract OpenAPI/Swagger
+specifications to synthesize verified Supervised Fine-Tuning (SFT) interaction traces and complex
+evaluation records entirely offline. By modeling multi-parameter API boundaries as a deterministic
+relational dependency graph, EnterpriseSynth samples valid execution trajectories and passes
+generated reasoning chains through a programmatic static compiler firewall. Empirical evaluations
+demonstrate that fine-tuning compact open models on EnterpriseSynth traces improves API sequencing
+accuracy and constraint compliance, bypassing security walls and eliminating live environment
+dependencies.
+\end{abstract}
+
+\section{Introduction}
+The paradigm of software engineering and workflow automation is experiencing a structural shift
+toward autonomous, tool-augmented Large Language Model (LLM) agents. By translating
+non-deterministic natural language intents into deterministic sequences of external system
+transactions---modeled as structured web interfaces via OpenAPI or Swagger specifications---agents
+possess the theoretical capacity to orchestrate highly complex enterprise operations.
+
+\begin{figure}[t]
+\centering
+% TODO: replace with local system vector graphic mapping graph parsing logic
+\includegraphics[width=\columnwidth]{enterprisesynth_pipeline_diagram.pdf}
+\caption{The EnterpriseSynth Zero-Execution Architectural Matrix vs Traditional Live Pipelines.}
+\label{fig:pipeline_matrix}
+\end{figure}
+
+However, transitioning these agents from controlled public domains to proprietary enterprise
+systems reveals a severe data cold-start bottleneck. Out-of-the-box foundation models exhibit poor
+zero-shot performance on enterprise tool configurations; they frequently violate JSON payload
+definitions, hallucinate non-existent parameter fields, and fail to track cascading variables
+across multi-step execution paths. Mitigating these structural failures necessitates robust
+Supervised Fine-Tuning (SFT) alongside highly localized evaluation tracks.
+
+To populate these training datasets, state-of-the-art synthetic data generation engines rely
+exclusively on an active execution paradigm. Frameworks such as ToolBench~\cite{qin2023toolbench}
+connect target foundation models to live execution servers or populated network backends,
+recording real-world system responses to construct functional interaction traces. While viable
+for public web extensions, this operational assumption collapses behind the enterprise firewall
+due to a three-fold conflict we term the \textit{Execution Paradox}:
+\begin{enumerate}
+    \item \textbf{Sandbox Absences:} High-fidelity staging copies populated with realistic data
+    states rarely exist for specialized, internal corporate software clusters.
+    \item \textbf{Data Privacy and State Vulnerability:} Running autonomous exploratory agent loops
+    against production layers introduces catastrophic risks, including the corruption of
+    operational state variables, violation of security compliance boundaries, and unintended
+    execution of destructive actions.
+    \item \textbf{Throughput Constraints:} Active generation over network layers is inherently
+    bounded by high request latencies and rigid infrastructure rate-limiting rules.
+\end{enumerate}
+
+To resolve this paradox, we present \textbf{EnterpriseSynth}, a zero-execution synthesis matrix
+that completely decouples agent data generation from system execution. EnterpriseSynth shifts the
+data-gathering pipeline from a runtime extraction challenge to a static compiler optimization
+problem. Given an abstract enterprise API schema definition, our framework programmatically maps
+endpoints into a directed relational parameter graph, samples valid multi-step operational
+trajectories, utilizes an offline inference driver to synthesize textual reasoning paths, and
+strictly enforces data typing boundaries through an automated static constraint validation
+firewall.
+
+The closest existing architecture to this offline synthesis approach is
+AgentInstruct~\cite{mitra2024agentinstruct}, whose agentic multi-flow pipeline generates tool-use
+training data without executing any tool, simulating responses via the LLM itself. However, when
+seeded only from source code, AgentInstruct's content-transformation stage must synthesize an API
+description from the code or have the LLM hypothesize additional APIs it believes exist, with no
+ground-truth check against a real interface definition; its quality control is a soft
+Suggester-Editor refinement loop plus a held-out, post-hoc LLM-judged benchmark, not a per-sample
+structural gate. We adapt its agentic-flow architecture to ingest a real target-organization
+OpenAPI/Swagger spec directly (removing the hallucination step entirely, since the schema is
+already ground truth), replace its post-hoc judging with a hard static constraint validator checked
+against the spec, and extend the pipeline to jointly emit intent-spec-tied evaluation records. We
+position against the two execution-dependent alternatives in our review, API-Bank~\cite{li2023apibank}
+and ToolBench~\cite{qin2023toolbench}, on safety and availability grounds: both ground their
+training data in real API calls (API-Bank against reproducibility-constrained real databases,
+ToolBench via roughly 470,000 live RapidAPI calls during annotation), which is exactly the
+dependency the Execution Paradox rules out for most enterprise API surfaces.
+
+\subsection{Summary of Contributions}
+Our core architectural contributions to the research frontier are structured as follows:
+\begin{itemize}
+    \item We introduce a formal software framework for zero-execution agent data generation that
+    ingests production-tier OpenAPI schemas to output multi-turn instruction traces without a
+    single live backend connection.
+    \item We detail a deterministic relational graph engine that translates structural parameter
+    schemas into explicit dependency chains to guide agent sequencing without data
+    hallucinations.
+    \item We release a programmatic static constraint validator that mimics compiler-level
+    firewalls to verify schema parameters, JSON syntax configurations, and variable types
+    completely offline.
+    \item We demonstrate that models optimized with our synthetic data distribution achieve
+    significant improvements in tool-sequencing success rates on our evaluation suite.
+    % NOTE: eval-suite name TBD pending the EnterpriseBench naming-collision decision --
+    % see DESIGN_DOC.md's open item. Do not finalize "EnterpriseBench" as the name here
+    % without resolving that first.
+\end{itemize}
+
+\section{Related Work}
+Our review covers two lineages: general-purpose synthetic instruction generation, and tool/API
+data generation specifically.
+
+\subsection{Synthetic Instruction Generation}
+\textbf{Self-Instruct}~\cite{wang2022selfinstruct} bootstraps instruction-tuning data from a
+model's own generations: starting from 175 human-written seed tasks, it iteratively prompts the
+model for new instructions, routes classification vs.\ non-classification tasks to different
+instance-generation strategies (output-first vs.\ input-first, to avoid label bias), and filters
+results with ROUGE-L similarity thresholds, keyword blocklists, and format/degeneracy heuristics.
+No execution and no tool/API notion is involved anywhere in the method.
+\textbf{Evol-Instruct/WizardLM}~\cite{xu2023wizardlm} instead evolves existing instructions along
+controlled axes -- in-depth evolving (add constraints, deepen, concretize, increase reasoning
+steps, complicate the input format) and in-breadth evolving (generate novel same-domain
+instructions) -- with an ``elimination evolving'' step discarding degenerate evolutions. Neither
+paper touches tool-use or API grounding at all; both are precedents for cheap, execution-free,
+heuristically-filtered synthetic data at scale.
+
+\textbf{AgentInstruct}~\cite{mitra2024agentinstruct} is the closest architectural precedent overall:
+an agentic, three-flow pipeline (content transformation, taxonomy-driven seed instruction
+generation, and Suggester-Editor iterative refinement) that produced the 25-million-pair dataset
+behind Orca-3. Its \texttt{tool\_use} skill category is seeded from either a code snippet or an
+API description; critically, when only code is available, a transformation agent
+\textit{synthesizes} an API description from it, and a retrieval agent or the LLM itself may
+\textit{hypothesize} additional APIs it believes exist in the library, with no ground-truth check.
+Tool responses in the resulting traces are LLM-simulated JSON, never executed. Verification is a
+soft editorial loop (Suggester-Editor) plus a held-out, GPT-4-judged benchmark (Orca-Bench, 1,700
+samples) computed \textit{after} data generation, not a per-sample structural filter -- the authors
+themselves note that ``synthetic data may not perfectly replicate the complexity and nuances of
+real-world data.''
+
+\subsection{Execution-Dependent Tool-Use Data}
+\textbf{API-Bank}~\cite{li2023apibank} evaluates tool proficiency across retrieval, execution, and
+planning tiers using real (though reproducibility-constrained -- results are hard-coded from a
+fixed query time) database backends. Its 1,888 training dialogues are themselves synthesized by an
+automated 5-agent pipeline, at 98\% lower cost than human annotation and a 94\% validity rate --
+evidence that agentic pipelines can approximate human-annotation quality even for tool dialogues --
+but its 314-dialogue evaluation set is manually annotated, and correctness is judged by comparing
+predicted vs.\ gold API calls for behavioral equivalence.
+\textbf{ToolLLM/ToolBench}~\cite{qin2023toolbench} scales this further: 16,464 real RapidAPI
+endpoints, ChatGPT-generated instructions, and a depth-first search-based decision tree (DFSDT)
+solution-path annotator that \textit{actually calls} the sampled real API at each step (roughly
+470,000 live calls logged during annotation) to obtain ground-truth responses, scored downstream by
+ToolEval's pass-rate/win-rate LLM judge (87\%/80\% agreement with human raters).
+
+Both are effective precisely because they ground responses in real execution -- which is exactly
+the capability that collapses behind an enterprise firewall (Section~1's Execution Paradox): no
+sandbox for internal systems, security/PII exposure from live calls, and infrastructure rate limits.
+
+\subsection{Research Gap}
+Current research demonstrates important advances in tool-using language models and synthetic
+instruction generation, yet several limitations remain: ToolLLM/ToolBench focus on public APIs and
+require large collections of externally available, callable services; API-Bank evaluates
+API-calling agents through executable APIs, making it dependent on live systems; and
+Self-Instruct, WizardLM, and AgentInstruct synthesize instruction-following data from text or code
+rather than from structured API specifications, leaving AgentInstruct's tool-use flow exposed to
+API hallucination when no real spec is available. No existing framework automatically converts an
+enterprise OpenAPI specification into both verified SFT trajectories and evaluation records
+suitable for training and assessing enterprise LLM agents without live API execution. This gap
+motivates EnterpriseSynth, a schema-aware framework that automatically synthesizes user intents,
+reasoning traces, API call sequences, expected outputs, and verification metadata directly from
+OpenAPI specifications, enabling enterprises to bootstrap both agent training and evaluation from
+API documentation alone.
+
+% TODO next sections: Methodology (three pillars per DESIGN_DOC.md \S4), Dataset (\S5),
+% Training \& Eval (\S6), Results, Discussion, Limitations, Conclusion.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
