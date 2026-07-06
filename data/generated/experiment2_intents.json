@@ -1,0 +1,158 @@
+{
+  "GitHub": [
+    {
+      "method": "POST",
+      "path": "/repos/{owner}/{repo}/tags/protection",
+      "operation_id": "repos/create-tag-protection",
+      "intents": [
+        "Set up a rule so only admins can push release tags matching v*.* on our payments-service repo to prevent accidental overwrites in production.",
+        "We need to lock down tag creation on the acme-api repository so that our CI pipeline can't be tampered with\u2014please add tag protection for anything prefixed with 'release-'.",
+        "Can you configure our infrastructure-as-code repo so that deployment tags like 'prod-*' can only be created or deleted by repository admins going forward?"
+      ]
+    },
+    {
+      "method": "PUT",
+      "path": "/orgs/{org}/actions/secrets/{secret_name}/repositories",
+      "operation_id": "actions/set-selected-repos-for-org-secret",
+      "intents": [
+        "Update the list of repositories that can access our org-level DOCKER_REGISTRY_PASSWORD secret to include the three new microservice repos our team just created",
+        "We're rotating which teams have access to the shared AWS_DEPLOY_KEY secret - please restrict it to only the payments-api and payments-worker repositories going forward",
+        "Grant the newly onboarded frontend-web and frontend-mobile repos access to the org's SENTRY_AUTH_TOKEN secret while removing the deprecated legacy-ui repo from that list"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/events",
+      "operation_id": "activity/list-public-events",
+      "intents": [
+        "Pull the latest public activity feed so I can check what's happening across the platform before our morning stand-up.",
+        "Our compliance team needs a snapshot of recent public events on the network for this week's audit report.",
+        "Can you fetch the current public timeline of activity? I want to scan it for anything relevant to our integration partners."
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/user/gpg_keys/{gpg_key_id}",
+      "operation_id": "users/get-gpg-key-for-authenticated-user",
+      "intents": [
+        "Check the details of GPG key ID 481516 on my GitHub account to confirm it's the one I use for signing our release commits",
+        "I need to verify the expiration date on one of my registered GPG keys before we rotate our commit signing credentials next quarter",
+        "Pull up the info for a specific GPG key on my profile so I can confirm its fingerprint matches what's documented in our security compliance records"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/repos/{owner}/{repo}/actions/artifacts",
+      "operation_id": "actions/list-artifacts-for-repo",
+      "intents": [
+        "Can you pull up all the build artifacts stored in the 'payments-service' repo so I can check disk usage?",
+        "I need to find every artifact named 'coverage-report' generated in the frontend-dashboard repository this month.",
+        "Check the acme-corp/data-pipeline repo for all uploaded CI artifacts before we clean up old storage."
+      ]
+    }
+  ],
+  "Stripe": [
+    {
+      "method": "DELETE",
+      "path": "/v1/subscription_items/{item}",
+      "operation_id": "DeleteSubscriptionItemsItem",
+      "intents": [
+        "Remove the extra seat license item si_1N3xYzABC from Acme Corp's subscription since they downgraded their team size this quarter.",
+        "We accidentally added a duplicate add-on line item to the Contoso account's billing subscription\u2014please delete subscription item si_9K2mTqLwe so they aren't double charged.",
+        "Our customer canceled their premium support add-on effective immediately, so pull subscription item si_7Rp4WvnXZ off their active subscription."
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/charges",
+      "operation_id": "PostCharges",
+      "intents": [
+        "Charge the customer's card on file $1,250 for invoice #4471 from Acme Corp's monthly subscription plan",
+        "We need to process a one-time payment of $89.99 for the premium upgrade that customer Jane Doe just requested over the phone",
+        "Please bill our client's saved payment method $3,500 as a deposit for the upcoming consulting engagement"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/{account}/capabilities/{capability}",
+      "operation_id": "GetAccountsAccountCapabilitiesCapability",
+      "intents": [
+        "Can you check if card payments capability is active for our connected account acct_1Hx8Yz2eZvKYlo2C?",
+        "I need to confirm whether the transfers capability has been approved for merchant account acct_19HcGGBElhZTiJ3D before we enable payouts.",
+        "Pull up the current status of the legacy_payments capability on account acct_1F3sQeBElhZTiJ3D, and include the requirements details in the response."
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/test_helpers/test_clocks",
+      "operation_id": "PostTestHelpersTestClocks",
+      "intents": [
+        "We're about to run a QA pass on our subscription billing flows\u2014can you spin up a new test clock so we can simulate customer time moving forward without waiting for real billing cycles?",
+        "Set up a fresh simulated clock in our sandbox environment so the QA team can test how annual subscription renewals behave a year from now.",
+        "I need to create a new test clock in Stripe's test mode so our engineers can validate trial-to-paid conversion logic before we ship the update."
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/disputes/{dispute}/close",
+      "operation_id": "PostDisputesDisputeClose",
+      "intents": [
+        "We already have enough evidence that dispute dp_1FcQ2kLxJ8 was accidental on the customer's end, so please close it out on our side since we're not submitting further evidence.",
+        "Mark the chargeback case dp_2Nk9RtA0Bq as closed in our system \u2014 the customer withdrew their claim after we spoke with them directly.",
+        "Can you close out dispute ID dp_3Zx7YpWq1L for us? Finance decided it's not worth contesting given the low transaction amount."
+      ]
+    }
+  ],
+  "Slack": [
+    {
+      "method": "POST",
+      "path": "/users.profile.set",
+      "operation_id": "users_profile_set",
+      "intents": [
+        "Update my Slack status to show I'm out at a conference through Friday and won't be checking messages regularly",
+        "Change my displayed job title in Slack from 'Marketing Coordinator' to 'Senior Marketing Coordinator' now that my promotion went through",
+        "Set my profile status to reflect that I'm working from the Chicago office this week so my team knows where to find me"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/admin.inviteRequests.approved.list",
+      "operation_id": "admin_inviteRequests_approved_list",
+      "intents": [
+        "Pull up the list of approved invite requests for our Slack workspace so I can confirm which external contractors were granted access last week",
+        "I need to audit all approved join requests for the marketing team's workspace\u2014can you fetch the first 50 and give me a cursor for the next batch?",
+        "Can you check which invite requests have already been approved for team T02ABCXYZ before I send the onboarding email to new hires?"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/admin.conversations.convertToPrivate",
+      "operation_id": "admin_conversations_convertToPrivate",
+      "intents": [
+        "Our #general-announcements channel accidentally got created as public and it needs to be locked down to only invited members immediately, can you convert it to private?",
+        "Legal just flagged that the #project-atlas-merger channel contains sensitive M&A discussion and needs to be switched from public to private right now.",
+        "Can you change the #hr-complaints channel from public to private so only authorized HR staff can view past messages and join going forward?"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/calls.info",
+      "operation_id": "calls_info",
+      "intents": [
+        "Can you pull up the details for call ID R123456789 so I can verify the duration before invoicing the client?",
+        "I need to check the status of the call logged under ID CALL-98213 to confirm it connected successfully with our support team.",
+        "Please retrieve the metadata for call record 4471-XZ so I can attach it to the compliance audit report we're preparing."
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/apps.permissions.users.list",
+      "operation_id": "apps_permissions_users_list",
+      "intents": [
+        "Pull up the list of users who currently have app permissions granted so we can review access before our security audit next week",
+        "I need to check which employees have been given permissions for our workspace apps as part of the quarterly compliance report, can you fetch the next page after cursor abc123 with up to 50 results?",
+        "Can you get me the full roster of users with app-level permissions so I can cross-reference it against our HR offboarding list and revoke access for anyone who's left the company?"
+      ]
+    }
+  ]
+}

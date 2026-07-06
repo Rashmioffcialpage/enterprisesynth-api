@@ -312,14 +312,36 @@ are reached through APIs.guru itself, not separate repositories.
 Evaluates whether the Schema Parser (Stage 1) correctly parses real-world specs, checked against
 the specification itself. Metrics: Endpoint Extraction Accuracy, Parameter Extraction Accuracy
 (required/optional, types, constraints), Schema Extraction Accuracy (request/response bodies,
-object definitions), Authentication Extraction Accuracy (API keys, OAuth, JWT, Basic). Results:
-to be measured for all three APIs above once Stage 1 is implemented.
+object definitions), Authentication Extraction Accuracy (API keys, OAuth, JWT, Basic).
+
+\textbf{Measured.} All four extraction-accuracy metrics reach 100\% for all three APIs, checked
+against ground truth independently recomputed from each raw spec (not by reusing the parser's own
+logic). This is expected: Stage 1 is deterministic parsing against a machine-readable format, not
+a generative task. The more informative finding is a genuine edge case Experiment 1 surfaced:
+GitHub's public OpenAPI specification declares zero \texttt{securitySchemes} and zero
+\texttt{security} requirements anywhere -- verified directly on the raw spec, not a parsing bug --
+meaning its authentication is documented in prose rather than machine-readable OpenAPI fields.
+This is a real limitation for Stage 6 (Schema Verification): an authentication check against
+GitHub's spec has nothing to check against.
 
 \subsection{Experiment 2: Intent Generation Evaluation}
 Evaluates whether the Intent Synthesis Agent (Stage 3) generates realistic enterprise user intents.
 Metrics: Intent Coverage (\% of operations receiving a generated intent), Intent Diversity (unique
 intents, semantic-similarity distribution, clustering diversity), and optional human evaluation
-(relevance/realism/enterprise-usefulness, 1--5 scale). Results: to be measured.
+(relevance/realism/enterprise-usefulness, 1--5 scale).
+
+\textbf{Measured (pilot scale).} Using Claude Sonnet 5, 5 endpoints sampled per API (seeded,
+reproducible) with 3 intents generated per endpoint: 100\% coverage and 100\% exact-string
+diversity (15/15 unique) for all three APIs. Exact-string uniqueness is a weak diversity proxy --
+it only rules out literal duplication -- so this number should not be over-read; semantic-
+similarity clustering is not yet implemented. Manual inspection of the generated intents (not just
+the aggregate metric) is more informative: for GitHub's
+\texttt{PUT /orgs/\{org\}/actions/secrets/\{secret\_name\}/repositories}, generated intents
+included distinct, correctly-scoped enterprise scenarios (rotating access to a
+\texttt{DOCKER\_REGISTRY\_PASSWORD} secret; restricting an \texttt{AWS\_DEPLOY\_KEY} secret to
+specific repos) rather than template-filled restatements of the same request. This is a
+15-endpoint pilot, not the full stratified sample from Section~3.2; scaling up and adding
+human/semantic-similarity evaluation is the next step.
 
 \subsection{Experiment 3: Agent Trajectory Generation}
 Evaluates whether the Trajectory Generator (Stage 5) produces complete tool-use trajectories (user

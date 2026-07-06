@@ -361,11 +361,26 @@ from a spec's operations?
 Diversity (unique intents, semantic-similarity distribution, clustering diversity), and optional
 human evaluation (relevance/realism/enterprise-usefulness, 1–5 scale).
 
-| API | Generated intents | Coverage | Diversity | Human score |
+**Measured (pilot scale)** — `src/enterprisesynth/intent_agent.py` (Claude Sonnet 5), run via
+`scripts/run_experiment2.py`: 5 endpoints sampled per API (seeded, reproducible), 3 intents
+generated per endpoint. Raw output in `data/generated/experiment2_intents.json`.
+
+| API | Generated intents | Coverage | Diversity (unique/total, exact-string) | Human score |
 | --- | --- | --- | --- | --- |
-| GitHub | to be measured | to be measured | to be measured | to be measured |
-| Stripe | to be measured | to be measured | to be measured | to be measured |
-| Slack | to be measured | to be measured | to be measured | to be measured |
+| GitHub | 15 | 100.0% | 100.0% (15/15) | not measured (no annotators yet) |
+| Stripe | 15 | 100.0% | 100.0% (15/15) | not measured (no annotators yet) |
+| Slack | 15 | 100.0% | 100.0% (15/15) | not measured (no annotators yet) |
+
+Exact-string diversity is a weak proxy (it only catches literal duplicates) — semantic-similarity
+clustering is not yet implemented, so this number should not be over-read; it just confirms the
+model isn't repeating itself verbatim at this small sample size. Spot-checking the actual output
+(not just the aggregate numbers) matters here: e.g. for GitHub's
+`PUT /orgs/{org}/actions/secrets/{secret_name}/repositories`, generated intents included "Update
+the list of repositories that can access our org-level DOCKER_REGISTRY_PASSWORD secret..." and
+"We're rotating which teams have access to the shared AWS_DEPLOY_KEY secret..." — both correctly
+scoped to the endpoint, distinct business scenarios, plausible enterprise phrasing, not generic
+template filling. This is a 15-endpoint pilot, not the full stratified sample from §5.2 — scaling
+to the full ~65-spec sample and adding human/semantic-similarity evaluation is the next step.
 
 ### 6.5 Experiment 3 — Agent Trajectory Generation
 
