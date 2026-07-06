@@ -1,0 +1,744 @@
+{
+  "GitHub": [
+    {
+      "intent": "Set up a rule so only admins can push release tags matching v*.* on our payments-service repo to prevent accidental overwrites in production.",
+      "ground_truth": "POST /repos/{owner}/{repo}/tags/protection",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/repos/{owner}/{repo}/tags/protection",
+        "reasoning": "This endpoint creates a tag protection rule that restricts who can push matching tags, which aligns with restricting release tag pushes (v*.*) on the payments-service repo to admins only.",
+        "parameters": {
+          "owner": "your-org",
+          "repo": "payments-service",
+          "pattern": "v*.*"
+        },
+        "expected_response_summary": "Returns the newly created tag protection rule object including its id, pattern (v*.*), and creation timestamp, confirming that pushes to matching tags are now restricted."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "We need to lock down tag creation on the acme-api repository so that our CI pipeline can't be tampered with\u2014please add tag protection for anything prefixed with 'release-'.",
+      "ground_truth": "POST /repos/{owner}/{repo}/tags/protection",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/repos/{owner}/{repo}/tags/protection",
+        "reasoning": "This endpoint creates a tag protection rule for a repository, allowing restriction of tag creation/deletion to patterns like 'release-*', fulfilling the request to lock down CI-related tags.",
+        "parameters": {
+          "owner": "acme-corp",
+          "repo": "acme-api",
+          "pattern": "release-*"
+        },
+        "expected_response_summary": "Returns the newly created tag protection object, including its id, pattern, and creation timestamp, confirming that tags matching 'release-*' are now protected."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you configure our infrastructure-as-code repo so that deployment tags like 'prod-*' can only be created or deleted by repository admins going forward?",
+      "ground_truth": "POST /repos/{owner}/{repo}/tags/protection",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/repos/{owner}/{repo}/tags/protection",
+        "reasoning": "This tool creates a tag protection rule restricting the creation/deletion of matching tags to repository admins, matching the request for protecting 'prod-*' deployment tags.",
+        "parameters": {
+          "owner": "my-org",
+          "repo": "infra-as-code",
+          "pattern": "prod-*"
+        },
+        "expected_response_summary": "Returns the newly created tag protection rule, including its id, pattern, and creation metadata, confirming that only admins can create or delete matching tags."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Update the list of repositories that can access our org-level DOCKER_REGISTRY_PASSWORD secret to include the three new microservice repos our team just created",
+      "ground_truth": "PUT /orgs/{org}/actions/secrets/{secret_name}/repositories",
+      "trajectory": {
+        "selected_method": "PUT",
+        "selected_path": "/orgs/{org}/actions/secrets/{secret_name}/repositories",
+        "reasoning": "This endpoint sets the full list of repositories permitted to access a selected org-level secret, allowing the team to update the list to include the new microservice repos.",
+        "parameters": {
+          "org": "my-org",
+          "secret_name": "DOCKER_REGISTRY_PASSWORD",
+          "selected_repository_ids": [
+            123456,
+            123457,
+            123458
+          ]
+        },
+        "expected_response_summary": "A 204 No Content response indicating the selected repositories list for the secret was successfully updated."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "We're rotating which teams have access to the shared AWS_DEPLOY_KEY secret - please restrict it to only the payments-api and payments-worker repositories going forward",
+      "ground_truth": "PUT /orgs/{org}/actions/secrets/{secret_name}/repositories",
+      "trajectory": {
+        "selected_method": "PUT",
+        "selected_path": "/orgs/{org}/actions/secrets/{secret_name}/repositories",
+        "reasoning": "This tool sets the exact list of repositories allowed to access an organization secret, matching the request to restrict AWS_DEPLOY_KEY to only payments-api and payments-worker.",
+        "parameters": {
+          "org": "acme-corp",
+          "secret_name": "AWS_DEPLOY_KEY",
+          "selected_repository_ids": [
+            123456,
+            789012
+          ]
+        },
+        "expected_response_summary": "A 204 No Content response confirming the secret's accessible repositories have been updated to the specified list."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Grant the newly onboarded frontend-web and frontend-mobile repos access to the org's SENTRY_AUTH_TOKEN secret while removing the deprecated legacy-ui repo from that list",
+      "ground_truth": "PUT /orgs/{org}/actions/secrets/{secret_name}/repositories",
+      "trajectory": {
+        "selected_method": "PUT",
+        "selected_path": "/orgs/{org}/actions/secrets/{secret_name}/repositories",
+        "reasoning": "This endpoint replaces the entire list of repositories permitted to access an org secret, allowing us to add frontend-web and frontend-mobile while omitting legacy-ui in a single call.",
+        "parameters": {
+          "org": "my-org",
+          "secret_name": "SENTRY_AUTH_TOKEN",
+          "selected_repository_ids": [
+            101,
+            102
+          ]
+        },
+        "expected_response_summary": "A 204 No Content response confirming the secret's selected repository list was updated to only include frontend-web and frontend-mobile."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Pull the latest public activity feed so I can check what's happening across the platform before our morning stand-up.",
+      "ground_truth": "GET /events",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/events",
+        "reasoning": "The user wants the latest public activity feed across the platform, which corresponds to the public events timeline endpoint rather than personalized feeds or repo-specific data.",
+        "parameters": {},
+        "expected_response_summary": "A list of recent public events (e.g., pushes, issues, pull requests) occurring across the platform, including actor, repo, and event type details."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Our compliance team needs a snapshot of recent public events on the network for this week's audit report.",
+      "ground_truth": "GET /events",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/events",
+        "reasoning": "The request asks for a snapshot of recent public events on the network, which directly matches the activity/list-public-events endpoint that returns a timeline of public GitHub activity.",
+        "parameters": {},
+        "expected_response_summary": "A JSON array of recent public events across GitHub, including event type, actor, repo, and timestamp for each entry."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you fetch the current public timeline of activity? I want to scan it for anything relevant to our integration partners.",
+      "ground_truth": "GET /events",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/events",
+        "reasoning": "The user wants the current public timeline of activity, which corresponds to the public events feed listing recent public GitHub activity that can be scanned for integration partner relevance.",
+        "parameters": {},
+        "expected_response_summary": "A list of recent public events (e.g., pushes, issues, pull requests, forks) across GitHub, including actor, repo, and event type details."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Check the details of GPG key ID 481516 on my GitHub account to confirm it's the one I use for signing our release commits",
+      "ground_truth": "GET /user/gpg_keys/{gpg_key_id}",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/user/gpg_keys/{gpg_key_id}",
+        "reasoning": "The user wants to check details of a specific GPG key by its ID on their GitHub account, which matches the endpoint for retrieving a single GPG key for the authenticated user.",
+        "parameters": {
+          "gpg_key_id": "481516"
+        },
+        "expected_response_summary": "Returns the GPG key details including key ID, public key, associated emails, creation date, and whether it can be used for signing."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "I need to verify the expiration date on one of my registered GPG keys before we rotate our commit signing credentials next quarter",
+      "ground_truth": "GET /user/gpg_keys/{gpg_key_id}",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/user/gpg_keys/{gpg_key_id}",
+        "reasoning": "This endpoint retrieves details of a specific GPG key registered to the authenticated user, including its expiration date, which is needed to verify before rotating commit signing credentials.",
+        "parameters": {
+          "gpg_key_id": "1234567"
+        },
+        "expected_response_summary": "Returns the GPG key details including key ID, public key, associated emails, creation date, and expiration date."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Pull up the info for a specific GPG key on my profile so I can confirm its fingerprint matches what's documented in our security compliance records",
+      "ground_truth": "GET /user/gpg_keys/{gpg_key_id}",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/user/gpg_keys/{gpg_key_id}",
+        "reasoning": "This tool retrieves details for a specific GPG key associated with the authenticated user's profile, including its fingerprint, which is needed to verify against security compliance records.",
+        "parameters": {
+          "gpg_key_id": "1234567"
+        },
+        "expected_response_summary": "Returns the GPG key details including key ID, fingerprint, associated emails, creation date, and expiration date."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you pull up all the build artifacts stored in the 'payments-service' repo so I can check disk usage?",
+      "ground_truth": "GET /repos/{owner}/{repo}/actions/artifacts",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/repos/{owner}/{repo}/actions/artifacts",
+        "reasoning": "This tool lists all build artifacts stored in a given repository, allowing the user to review them and assess disk usage.",
+        "parameters": {
+          "owner": "your-org",
+          "repo": "payments-service"
+        },
+        "expected_response_summary": "A JSON list of artifacts in the repo, including their names, sizes, creation dates, and expiration status, useful for evaluating disk usage."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "I need to find every artifact named 'coverage-report' generated in the frontend-dashboard repository this month.",
+      "ground_truth": "GET /repos/{owner}/{repo}/actions/artifacts",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/repos/{owner}/{repo}/actions/artifacts",
+        "reasoning": "This tool lists artifacts for a specific repository and supports filtering by name, allowing retrieval of all 'coverage-report' artifacts generated in the frontend-dashboard repo, which can then be filtered by date client-side.",
+        "parameters": {
+          "owner": "your-org",
+          "repo": "frontend-dashboard",
+          "name": "coverage-report"
+        },
+        "expected_response_summary": "A JSON list of artifact objects matching the name 'coverage-report', including metadata such as creation date, size, expiration, and download URL, which can be filtered to those created this month."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Check the acme-corp/data-pipeline repo for all uploaded CI artifacts before we clean up old storage.",
+      "ground_truth": "GET /repos/{owner}/{repo}/actions/artifacts",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/repos/{owner}/{repo}/actions/artifacts",
+        "reasoning": "This tool lists all CI artifacts uploaded for a given repository, matching the request to check artifacts in acme-corp/data-pipeline before cleanup.",
+        "parameters": {
+          "owner": "acme-corp",
+          "repo": "data-pipeline"
+        },
+        "expected_response_summary": "A JSON list of artifact objects including their IDs, names, sizes, creation dates, and expiration status for the repository."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    }
+  ],
+  "Stripe": [
+    {
+      "intent": "Remove the extra seat license item si_1N3xYzABC from Acme Corp's subscription since they downgraded their team size this quarter.",
+      "ground_truth": "DELETE /v1/subscription_items/{item}",
+      "trajectory": {
+        "selected_method": "DELETE",
+        "selected_path": "/v1/subscription_items/{item}",
+        "reasoning": "The request asks to remove a specific subscription item (seat license) identified by its item ID, which directly matches the DeleteSubscriptionItemsItem operation.",
+        "parameters": {
+          "item": "si_1N3xYzABC"
+        },
+        "expected_response_summary": "A confirmation object indicating the subscription item was deleted, including its id and a 'deleted': true flag."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "We accidentally added a duplicate add-on line item to the Contoso account's billing subscription\u2014please delete subscription item si_9K2mTqLwe so they aren't double charged.",
+      "ground_truth": "DELETE /v1/subscription_items/{item}",
+      "trajectory": {
+        "selected_method": "DELETE",
+        "selected_path": "/v1/subscription_items/{item}",
+        "reasoning": "The request is to remove a specific duplicate subscription item, which matches the DeleteSubscriptionItemsItem endpoint that deletes a subscription item by its ID.",
+        "parameters": {
+          "item": "si_9K2mTqLwe"
+        },
+        "expected_response_summary": "A confirmation object indicating the subscription item si_9K2mTqLwe was successfully deleted, removing it from the Contoso account's subscription and preventing further charges."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Our customer canceled their premium support add-on effective immediately, so pull subscription item si_7Rp4WvnXZ off their active subscription.",
+      "ground_truth": "DELETE /v1/subscription_items/{item}",
+      "trajectory": {
+        "selected_method": "DELETE",
+        "selected_path": "/v1/subscription_items/{item}",
+        "reasoning": "The user wants to remove a specific subscription item (the premium support add-on) from an active subscription, which is exactly what deleting a subscription item accomplishes.",
+        "parameters": {
+          "item": "si_7Rp4WvnXZ"
+        },
+        "expected_response_summary": "A deleted confirmation object containing the id 'si_7Rp4WvnXZ' and a boolean 'deleted': true, indicating the subscription item was removed successfully."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Charge the customer's card on file $1,250 for invoice #4471 from Acme Corp's monthly subscription plan",
+      "ground_truth": "POST /v1/charges",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/charges",
+        "reasoning": "Charging a customer's card on file for a specific amount is done by creating a charge object, referencing the customer and adding invoice metadata for tracking.",
+        "parameters": {
+          "amount": 125000,
+          "currency": "usd",
+          "customer": "cus_AcmeCorp123",
+          "description": "Invoice #4471 - Acme Corp monthly subscription plan",
+          "metadata": {
+            "invoice_number": "4471",
+            "company": "Acme Corp"
+          }
+        },
+        "expected_response_summary": "A charge object confirming the $1,250 payment status, including charge ID, paid status, and associated customer and card details."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "We need to process a one-time payment of $89.99 for the premium upgrade that customer Jane Doe just requested over the phone",
+      "ground_truth": "POST /v1/charges",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/charges",
+        "reasoning": "A one-time payment for a specific amount is best handled by creating a direct charge rather than a subscription, which is for recurring billing.",
+        "parameters": {
+          "amount": 8999,
+          "currency": "usd",
+          "description": "Premium upgrade - one-time payment for Jane Doe",
+          "source": "tok_visa"
+        },
+        "expected_response_summary": "A charge object confirming the $89.99 payment was successfully processed, including charge ID, status, and payment details."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Please bill our client's saved payment method $3,500 as a deposit for the upcoming consulting engagement",
+      "ground_truth": "POST /v1/charges",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/charges",
+        "reasoning": "Charging a client's saved payment method for a one-time deposit amount is done by creating a charge against their customer ID, using the saved default payment source.",
+        "parameters": {
+          "amount": 350000,
+          "currency": "usd",
+          "customer": "cus_NffrFeUfNV2Hib",
+          "description": "Deposit for upcoming consulting engagement"
+        },
+        "expected_response_summary": "A charge object confirming the $3,500 payment was successfully processed against the customer's saved payment method, including status, amount captured, and receipt details."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you check if card payments capability is active for our connected account acct_1Hx8Yz2eZvKYlo2C?",
+      "ground_truth": "GET /v1/accounts/{account}/capabilities/{capability}",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/v1/accounts/{account}/capabilities/{capability}",
+        "reasoning": "To check the status of a specific capability like card_payments for a connected account, use the GET capability retrieval endpoint with the account and capability identifiers.",
+        "parameters": {
+          "account": "acct_1Hx8Yz2eZvKYlo2C",
+          "capability": "card_payments"
+        },
+        "expected_response_summary": "Returns the capability object showing its status (e.g., active, pending, inactive) for the specified connected account."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "I need to confirm whether the transfers capability has been approved for merchant account acct_19HcGGBElhZTiJ3D before we enable payouts.",
+      "ground_truth": "GET /v1/accounts/{account}/capabilities/{capability}",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/v1/accounts/{account}/capabilities/{capability}",
+        "reasoning": "This request is a read-only check to confirm the status of the 'transfers' capability on a connected account, which matches the GET capability retrieval endpoint.",
+        "parameters": {
+          "account": "acct_19HcGGBElhZTiJ3D",
+          "capability": "transfers"
+        },
+        "expected_response_summary": "Returns the capability object showing its status (e.g., active, pending, or inactive) for the transfers capability on the specified account."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Pull up the current status of the legacy_payments capability on account acct_1F3sQeBElhZTiJ3D, and include the requirements details in the response.",
+      "ground_truth": "GET /v1/accounts/{account}/capabilities/{capability}",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/v1/accounts/{account}/capabilities/{capability}",
+        "reasoning": "The request asks to retrieve the current status of a specific capability on a connected account, which is a read operation matching the GET capability endpoint; expand can be used to include requirements details.",
+        "parameters": {
+          "account": "acct_1F3sQeBElhZTiJ3D",
+          "capability": "legacy_payments",
+          "expand": [
+            "requirements"
+          ]
+        },
+        "expected_response_summary": "Returns the capability object showing its current status (e.g., active, pending, inactive) along with detailed requirements information such as currently_due, past_due, and disabled_reason fields."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "We're about to run a QA pass on our subscription billing flows\u2014can you spin up a new test clock so we can simulate customer time moving forward without waiting for real billing cycles?",
+      "ground_truth": "POST /v1/test_helpers/test_clocks",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/test_helpers/test_clocks",
+        "reasoning": "The request asks to create a new test clock to simulate time progression for subscription testing, which directly matches the PostTestHelpersTestClocks operation.",
+        "parameters": {
+          "frozen_time": 1717000000,
+          "name": "QA Billing Test Clock"
+        },
+        "expected_response_summary": "Returns a new test_clock object with its id, current frozen_time, status, and creation timestamp, ready to be advanced or attached to test customers/subscriptions."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Set up a fresh simulated clock in our sandbox environment so the QA team can test how annual subscription renewals behave a year from now.",
+      "ground_truth": "POST /v1/test_helpers/test_clocks",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/test_helpers/test_clocks",
+        "reasoning": "The request is to create a new simulated clock in the sandbox (test mode) so QA can later advance time to test annual renewal behavior; this endpoint creates that fresh test clock object.",
+        "parameters": {
+          "frozen_time": 1735689600,
+          "name": "QA-Annual-Renewal-Clock"
+        },
+        "expected_response_summary": "Returns a new test_clock object with its id, status 'ready', and the frozen_time set to the current timestamp, ready to be advanced later for renewal testing."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "I need to create a new test clock in Stripe's test mode so our engineers can validate trial-to-paid conversion logic before we ship the update.",
+      "ground_truth": "POST /v1/test_helpers/test_clocks",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/test_helpers/test_clocks",
+        "reasoning": "This endpoint creates a new test clock in Stripe's test mode, enabling engineers to simulate time-based subscription events like trial-to-paid conversions.",
+        "parameters": {
+          "frozen_time": 1706745600,
+          "name": "Trial-to-Paid Conversion Test Clock"
+        },
+        "expected_response_summary": "Returns a test clock object containing its unique ID, current frozen_time, status, and creation timestamp for use in simulating time progression."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "We already have enough evidence that dispute dp_1FcQ2kLxJ8 was accidental on the customer's end, so please close it out on our side since we're not submitting further evidence.",
+      "ground_truth": "POST /v1/disputes/{dispute}/close",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/disputes/{dispute}/close",
+        "reasoning": "The user wants to close the dispute without submitting further evidence, which matches the dispute close endpoint that finalizes a dispute on the merchant's side.",
+        "parameters": {
+          "dispute": "dp_1FcQ2kLxJ8"
+        },
+        "expected_response_summary": "Returns the updated dispute object with status set to 'lost' (closed) confirming no further evidence will be submitted."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Mark the chargeback case dp_2Nk9RtA0Bq as closed in our system \u2014 the customer withdrew their claim after we spoke with them directly.",
+      "ground_truth": "POST /v1/disputes/{dispute}/close",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/disputes/{dispute}/close",
+        "reasoning": "The chargeback case ID (dp_2Nk9RtA0Bq) corresponds to a dispute object, and closing it reflects the customer's withdrawal of the claim after direct communication.",
+        "parameters": {
+          "dispute": "dp_2Nk9RtA0Bq"
+        },
+        "expected_response_summary": "Returns the updated dispute object with its status field set to 'lost' or 'closed', reflecting that the dispute has been resolved and no further action is pending."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you close out dispute ID dp_3Zx7YpWq1L for us? Finance decided it's not worth contesting given the low transaction amount.",
+      "ground_truth": "POST /v1/disputes/{dispute}/close",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/disputes/{dispute}/close",
+        "reasoning": "The user wants to close a dispute by its ID, which directly matches the dispute close endpoint that accepts the dispute identifier as a path parameter.",
+        "parameters": {
+          "dispute": "dp_3Zx7YpWq1L"
+        },
+        "expected_response_summary": "Returns the updated dispute object with its status changed to 'lost' (closed as not contested)."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    }
+  ],
+  "Slack": [
+    {
+      "intent": "Update my Slack status to show I'm out at a conference through Friday and won't be checking messages regularly",
+      "ground_truth": "POST /users.profile.set",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/users.profile.set",
+        "reasoning": "Updating a Slack status (text, emoji, and expiration) is done via the users.profile.set endpoint, which allows setting profile fields including status_text, status_emoji, and status_expiration.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "profile": "{\"status_text\": \"At a conference, back Monday\", \"status_emoji\": \":palm_tree:\", \"status_expiration\": 1718755200}"
+        },
+        "expected_response_summary": "A JSON response confirming the profile update with the new status text, emoji, and expiration timestamp reflected in the user's Slack profile."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Change my displayed job title in Slack from 'Marketing Coordinator' to 'Senior Marketing Coordinator' now that my promotion went through",
+      "ground_truth": "POST /users.profile.set",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/users.profile.set",
+        "reasoning": "This tool updates a user's Slack profile fields, including the 'title' field, allowing the displayed job title to be changed to reflect the promotion.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "profile": "{\"title\": \"Senior Marketing Coordinator\"}"
+        },
+        "expected_response_summary": "A JSON object confirming success (ok: true) and returning the updated user profile including the new title field."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Set my profile status to reflect that I'm working from the Chicago office this week so my team knows where to find me",
+      "ground_truth": "POST /users.profile.set",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/users.profile.set",
+        "reasoning": "This tool allows updating the user's profile fields, including status text and emoji, which can be used to indicate working from the Chicago office this week.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "profile": "{\"status_text\": \"Working from Chicago office this week\", \"status_emoji\": \":office:\", \"status_expiration\": 0}"
+        },
+        "expected_response_summary": "A success response confirming the profile status was updated, returning the updated profile object with the new status text and emoji."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Pull up the list of approved invite requests for our Slack workspace so I can confirm which external contractors were granted access last week",
+      "ground_truth": "GET /admin.inviteRequests.approved.list",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/admin.inviteRequests.approved.list",
+        "reasoning": "This tool retrieves the list of approved invite requests for a Slack workspace, allowing the user to review which external contractors were granted access.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "team_id": "T01234567",
+          "limit": 50
+        },
+        "expected_response_summary": "A JSON list of approved invite requests including requester email, invited user details, approval timestamp, and workspace/team info."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "I need to audit all approved join requests for the marketing team's workspace\u2014can you fetch the first 50 and give me a cursor for the next batch?",
+      "ground_truth": "GET /admin.inviteRequests.approved.list",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/admin.inviteRequests.approved.list",
+        "reasoning": "This tool lists approved invite/join requests for a workspace, supporting team_id filtering, pagination via cursor, and a limit parameter to fetch a specific batch size like 50.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "team_id": "T02MARKETING",
+          "limit": 50
+        },
+        "expected_response_summary": "Returns a list of up to 50 approved join requests for the marketing team's workspace, along with a next_cursor value for retrieving the next batch."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you check which invite requests have already been approved for team T02ABCXYZ before I send the onboarding email to new hires?",
+      "ground_truth": "GET /admin.inviteRequests.approved.list",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/admin.inviteRequests.approved.list",
+        "reasoning": "This tool retrieves the list of already-approved invite requests for a specified team, matching the user's need to verify approvals before sending onboarding emails.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "team_id": "T02ABCXYZ",
+          "limit": 100
+        },
+        "expected_response_summary": "A list of approved invite requests for team T02ABCXYZ, including requester details, email addresses, and approval timestamps."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Our #general-announcements channel accidentally got created as public and it needs to be locked down to only invited members immediately, can you convert it to private?",
+      "ground_truth": "POST /admin.conversations.convertToPrivate",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/admin.conversations.convertToPrivate",
+        "reasoning": "This tool directly converts a public channel to a private one, matching the request to lock down the #general-announcements channel.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "channel_id": "C012ABCDEF"
+        },
+        "expected_response_summary": "A JSON response confirming success (ok: true) and indicating the channel has been converted to private."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Legal just flagged that the #project-atlas-merger channel contains sensitive M&A discussion and needs to be switched from public to private right now.",
+      "ground_truth": "POST /admin.conversations.convertToPrivate",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/admin.conversations.convertToPrivate",
+        "reasoning": "This tool is specifically designed to convert a public channel to private, matching the request to switch #project-atlas-merger from public to private due to sensitive content.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "channel_id": "C0123ATLASMRG"
+        },
+        "expected_response_summary": "A success confirmation indicating the channel has been converted to private, along with the channel ID."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you change the #hr-complaints channel from public to private so only authorized HR staff can view past messages and join going forward?",
+      "ground_truth": "POST /admin.conversations.convertToPrivate",
+      "trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/admin.conversations.convertToPrivate",
+        "reasoning": "This tool directly converts a public channel to a private one, matching the request to make #hr-complaints private so only authorized staff can view history and join.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "channel_id": "C0123HRCOMPLAINTS"
+        },
+        "expected_response_summary": "Returns a confirmation object indicating the channel was successfully converted to private, including the channel ID and updated privacy status."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you pull up the details for call ID R123456789 so I can verify the duration before invoicing the client?",
+      "ground_truth": "GET /calls.info",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/calls.info",
+        "reasoning": "The user wants to retrieve details, including duration, for a specific call ID, which matches the calls.info endpoint designed to fetch call metadata by ID.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "id": "R123456789"
+        },
+        "expected_response_summary": "Returns call details including duration, participants, creation time, and status for the specified call ID."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "I need to check the status of the call logged under ID CALL-98213 to confirm it connected successfully with our support team.",
+      "ground_truth": "GET /calls.info",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/calls.info",
+        "reasoning": "The calls.info endpoint retrieves details and status of a specific call by its ID, which fulfills the request to check the connection status of CALL-98213.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "id": "CALL-98213"
+        },
+        "expected_response_summary": "Returns call details including status, participants, and whether the call connected successfully."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Please retrieve the metadata for call record 4471-XZ so I can attach it to the compliance audit report we're preparing.",
+      "ground_truth": "GET /calls.info",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/calls.info",
+        "reasoning": "The request asks for metadata about a specific call record identified by ID, which matches the calls.info endpoint designed to retrieve call information by ID.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "id": "4471-XZ"
+        },
+        "expected_response_summary": "Returns call metadata including title, date/time, participants, and join URL for call record 4471-XZ."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Pull up the list of users who currently have app permissions granted so we can review access before our security audit next week",
+      "ground_truth": "GET /apps.permissions.users.list",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/apps.permissions.users.list",
+        "reasoning": "This tool retrieves the list of users who have granted app permissions, directly supporting the security audit review requested.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "limit": 100
+        },
+        "expected_response_summary": "A paginated list of users who have granted permissions to the app, including user IDs and associated scopes, along with a cursor for further pagination if needed."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "I need to check which employees have been given permissions for our workspace apps as part of the quarterly compliance report, can you fetch the next page after cursor abc123 with up to 50 results?",
+      "ground_truth": "GET /apps.permissions.users.list",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/apps.permissions.users.list",
+        "reasoning": "This tool lists users who have granted permissions to workspace apps, which matches the compliance report need, and supports cursor-based pagination with a result limit.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "cursor": "abc123",
+          "limit": 50
+        },
+        "expected_response_summary": "A paginated list of users with their app permissions/grants, along with a next_cursor value for further pagination."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    },
+    {
+      "intent": "Can you get me the full roster of users with app-level permissions so I can cross-reference it against our HR offboarding list and revoke access for anyone who's left the company?",
+      "ground_truth": "GET /apps.permissions.users.list",
+      "trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/apps.permissions.users.list",
+        "reasoning": "This tool retrieves the roster of users who have granted app-level permissions, which is exactly what's needed to cross-reference against the HR offboarding list before revoking access.",
+        "parameters": {
+          "token": "REDACTED_EXAMPLE_TOKEN",
+          "limit": 100
+        },
+        "expected_response_summary": "A paginated list of users who have authorized app-level permissions, including user IDs and associated scopes, along with a cursor for retrieving additional pages if needed."
+      },
+      "selected_correct": true,
+      "required_params_satisfied": true
+    }
+  ]
+}

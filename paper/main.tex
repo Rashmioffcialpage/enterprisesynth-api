@@ -347,7 +347,24 @@ human/semantic-similarity evaluation is the next step.
 Evaluates whether the Trajectory Generator (Stage 5) produces complete tool-use trajectories (user
 intent $\rightarrow$ planning $\rightarrow$ API calls $\rightarrow$ arguments $\rightarrow$
 expected response). Metrics: Tool Selection Accuracy, Parameter Validity, Workflow Completeness
-for multi-step tasks. Results: to be measured.
+for multi-step tasks.
+
+\textbf{Measured (pilot scale).} Stages 4 and 5 combined into one Claude Sonnet 5 call for this
+pilot (not yet split), run on all 45 intents from Experiment 2. Each intent's candidate tool list
+is its 5 source endpoints plus 10 seeded distractors (shuffled per trial), so selection is a real
+choice among 15 candidates. Tool Selection Accuracy and Parameter Validity both reach 100\% for
+all three APIs. Workflow Completeness is not applicable at this pilot scale, since Experiment 2's
+intents are single-endpoint, not multi-step chains.
+
+We state a methodological caveat plainly rather than omit it: the same model generated both the
+intents (Experiment 2) and the tool selections (Experiment 3) here, so this measures whether the
+model can recover the endpoint it itself had in mind when writing the intent -- not whether it
+handles independently-authored, ambiguous, or adversarial intents. Manual inspection (e.g.
+Stripe's \texttt{DELETE /v1/subscription\_items/\{item\}}: the model correctly extracted the
+literal item ID \texttt{si\_1N3xYzABC} from free text into the \texttt{item} parameter, with
+coherent reasoning) shows the mechanism functions end-to-end, but 100\%/100\% here should be read
+as a pipeline-functionality check, not a generalization claim. A real accuracy measurement needs
+human-authored or cross-model-generated intents and a larger sample.
 
 \subsection{Experiment 4: Schema-Based Verification}
 The central novelty claim: can the Schema Verification Engine (Stage 6) validate generated
