@@ -3,7 +3,7 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 
-\title{EnterpriseSynth: Agentic SFT and Eval Data from API Schemas Without Live Execution}
+\title{EnterpriseSynth: A Schema-Aware Agentic Framework for Generating Verified SFT and Evaluation Datasets from OpenAPI Specifications}
 \author{Rashmi Thimmaraju}
 \date{}
 
@@ -175,8 +175,48 @@ reasoning traces, API call sequences, expected outputs, and verification metadat
 OpenAPI specifications, enabling enterprises to bootstrap both agent training and evaluation from
 API documentation alone.
 
-% TODO next sections: Methodology (three pillars per DESIGN_DOC.md \S4), Dataset (\S5),
-% Training \& Eval (\S6), Results, Discussion, Limitations, Conclusion.
+\section{Methodology}
+EnterpriseSynth is a seven-stage offline pipeline (Figure~\ref{fig:pipeline_matrix}), each stage
+addressing a specific gap identified in Section~2's research-gap analysis.
+
+\textbf{1. API Schema Parser.} Ingests the OpenAPI/Swagger spec and extracts endpoints,
+parameters, authentication requirements, and response schemas.
+
+\textbf{2. API Knowledge Graph Builder.} Constructs a directed graph
+$\mathcal{G} = (\mathcal{V}, \mathcal{E})$ with endpoints, objects, and parameters as nodes, and
+dependency, sequential-workflow, and object-relation edges. Unlike
+AgentInstruct~\cite{mitra2024agentinstruct}'s \texttt{tool\_use} flow, which must synthesize or
+hypothesize an API description when seeded only from code, this graph is derived directly from the
+real spec: there is nothing to hallucinate.
+
+\textbf{3. Intent Synthesis Agent.} Generates user intents ranging from simple single-endpoint
+tasks to multi-step enterprise workflows, by traversing $\mathcal{G}$.
+
+\textbf{4. Agentic Planning Module.} Decomposes each intent into a concrete API workflow plan:
+task decomposition, endpoint selection, and tool ordering. Stages 3 and 4 together are the
+schema-grounded analog of AgentInstruct's taxonomy-driven seed generation and
+Evol-Instruct~\cite{xu2023wizardlm}'s "complicate input" evolution step, except task complexity is
+derived from real dependency depth in $\mathcal{G}$ rather than a heuristic evolution rule.
+
+\textbf{5. Trajectory Generator.} Synthesizes the reasoning trace, tool calls, parameters, and
+expected responses for each planned workflow -- the raw SFT trajectory.
+
+\textbf{6. Schema Verification Engine.} A compiler-style firewall validating every generated
+trajectory against the spec itself: endpoint existence, HTTP method, required parameters,
+parameter types, response schema, and authentication -- entirely offline. Where
+Self-Instruct~\cite{wang2022selfinstruct} and Evol-Instruct filter with text heuristics (ROUGE
+similarity, keyword rules, degeneracy checks) and AgentInstruct verifies only via soft editorial
+refinement plus a post-hoc held-out judge (Orca-Bench), this is a hard, per-sample structural gate.
+
+\textbf{7. Dataset Constructor.} Emits four jointly-derived artifacts from a single generation
+pass: the SFT dataset, the evaluation dataset, verification metadata, and the intent
+specifications tying each SFT trace to its paired eval record. This joint, intent-spec-linked
+emission is the artifact none of the five reviewed papers produce -- Orca-Bench, API-Bank's
+human-annotated evaluation set, and ToolEval are each constructed separately from the
+training-data-generation act, not mechanically derived from the same pass.
+
+% TODO next sections: Dataset (\S5 of DESIGN_DOC.md), Training \& Eval (\S6),
+% Results, Discussion, Limitations, Conclusion.
 
 \bibliographystyle{plain}
 \bibliography{references}

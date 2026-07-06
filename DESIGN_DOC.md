@@ -1,5 +1,7 @@
 # EnterpriseSynth — Research Design Document
 
+**Paper title:** EnterpriseSynth: A Schema-Aware Agentic Framework for Generating Verified SFT and
+Evaluation Datasets from OpenAPI Specifications
 **Topic (T1b):** Agentic SFT + Eval Data from API Schemas Without Live Execution
 **Author:** Rashmi Thimmaraju
 **Target venues:** MLinPL 2026 (deadline Aug 1, 2026) · AAAI 2027 Workshop on Enterprise AI Evaluation (deadline Jul 28, 2026)
@@ -106,41 +108,83 @@ Full per-paper breakdown is in `paper/related_work_audit.md`.
 
 ---
 
-## 4. Methodology — Three Pillars
+## 4. Methodology — Seven-Stage Pipeline
 
-1. **Structural Graph Extractor** — parses OpenAPI/Swagger specs into a directed relational graph
-   $\mathcal{G} = (\mathcal{V}, \mathcal{E})$: endpoints as nodes, parameter/response-to-parameter
-   dependencies as edges. Unlike AgentInstruct's tool-use flow, which must synthesize or
-   hypothesize an API description when seeded from code, this graph is built directly from the
-   real spec — there is nothing to hallucinate.
-2. **Deterministic Intent Engine** — the schema-grounded analog of AgentInstruct's taxonomy-driven
-   seed generation and Evol-Instruct's "complicate input" evolution step: traverses graph edges to
-   define multi-turn intents (e.g., a parent endpoint's response token mapped into a child
-   endpoint's parameter slot), generating the paired natural-language instruction + reasoning
-   trace + intent spec, with task complexity derived from real dependency depth rather than a
-   heuristic evolution rule.
-3. **Static Constraint Validator** — a compiler-style firewall: checks generated tool calls against
-   the spec's declared parameter types/required fields/response schema, entirely offline (no
-   execution). Where Self-Instruct and Evol-Instruct filter with text heuristics (ROUGE similarity,
-   keyword rules, degeneracy checks) and AgentInstruct verifies only via soft editorial refinement
-   plus a post-hoc held-out judge, this is a hard, per-sample structural gate tied to the intent
-   spec object.
+```
+OpenAPI/Swagger Spec
+        |
+        v
+1. API Schema Parser            -- endpoints, parameters, authentication, response schemas
+        |
+        v
+2. API Knowledge Graph Builder  -- nodes: endpoints/objects/parameters
+        |                          edges: dependency, sequential workflow, object relations
+        v
+3. Intent Synthesis Agent       -- user intents: simple tasks, multi-step workflows,
+        |                          enterprise scenarios
+        v
+4. Agentic Planning Module      -- task decomposition, endpoint selection, tool ordering,
+        |                          API workflow plan
+        v
+5. Trajectory Generator         -- reasoning traces, tool calls, parameters, expected responses
+        |
+        v
+6. Schema Verification Engine   -- validates: endpoint exists, HTTP method, required params,
+        |                          param types, response schema, authentication
+        v
+7. Dataset Constructor          -- outputs: SFT dataset, evaluation dataset,
+                                    verification metadata, intent specifications
+```
+
+Each stage maps onto a gap identified in the literature review (§3):
+
+1. **API Schema Parser** and **2. API Knowledge Graph Builder** — build the graph
+   $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ (endpoints/objects/parameters as nodes; dependency,
+   sequential-workflow, and object-relation edges) directly from the real spec. Unlike
+   AgentInstruct's `tool_use` flow, which must synthesize or hypothesize an API description when
+   seeded only from code, there is nothing to hallucinate here — the graph is derived, not invented.
+2. **3. Intent Synthesis Agent** and **4. Agentic Planning Module** — the schema-grounded analog of
+   AgentInstruct's taxonomy-driven seed generation and Evol-Instruct's "complicate input" evolution
+   step: traverses the knowledge graph to decompose intents into endpoint selections and workflow
+   plans, with task complexity derived from real dependency depth (how many graph hops a workflow
+   requires) rather than a heuristic evolution rule.
+3. **5. Trajectory Generator** — produces the paired natural-language reasoning trace + tool calls
+   + parameters + expected responses (the SFT trace) directly from the agentic plan.
+4. **6. Schema Verification Engine** — the compiler-style firewall: checks every generated
+   trajectory against the spec's declared endpoint/method/parameter-type/required-field/response
+   schema/authentication requirements, entirely offline. Where Self-Instruct and Evol-Instruct
+   filter with text heuristics (ROUGE similarity, keyword rules, degeneracy checks) and
+   AgentInstruct verifies only via soft editorial refinement plus a post-hoc held-out judge, this
+   is a hard, per-sample structural gate.
+5. **7. Dataset Constructor** — jointly emits the SFT dataset, the evaluation dataset, verification
+   metadata, and the intent specifications that tie an SFT trace to its paired eval record — the
+   artifact none of the five reviewed papers produce (Orca-Bench, API-Bank's human-annotated set,
+   and ToolEval are all separate from the training-data generation act, not mechanically derived
+   from the same pass).
 
 ---
 
 ## 5. Dataset Plan
 
-- **Primary source:** [APIs.guru](https://apis.guru/) / `openapi-directory` — thousands of
-  structured OpenAPI 2.0/3.x specs, good diversity, tractable per-spec licensing.
-- **Baseline comparison:** held-out slice of ToolBench's RapidAPI pool (16,464 APIs), to benchmark
-  against ToolLLM/ToolACE-style methods on a known corpus.
-- **Cold-start validation set:** a small, hand-authored set of synthetic "enterprise-internal" specs
-  (CRM, ticketing, HRIS, internal billing) modeled on real enterprise API shapes. Required because
-  public specs may already be in pretraining data — using only public specs would undermine the
-  cold-start claim.
-- **Scale target (Phase 1):** ingest production-tier nested public schemas (Kubernetes, Stripe) plus
-  the synthetic enterprise set; generate 5,000 SFT rows (`train_sft_pool.jsonl`, multi-turn
-  conversation format) + 1,000 eval records (`eval_records_spec.jsonl`).
+Full detail and provenance in `data/README.md`. Summary:
+
+- **Primary source:** [APIs.guru](https://apis.guru/) / `openapi-directory` — verified live against
+  `api.apis.guru/v2/list.json` on 2026-07-06: **2,529 APIs, 3,992 spec versions**, CC0-1.0 for the
+  aggregator (individual specs retain their own source terms). Confirmed present: `github.com`,
+  `stripe.com`, `slack.com`, `twilio.com`, `spotify.com`, `zoom.us`, `kubernetes.io`, `openai.com`,
+  `digitalocean.com`. **Not present:** `discord.com` (no official OpenAPI spec published).
+- **Baseline comparison:** held-out slice of ToolLLM/ToolBench's RapidAPI pool (16,464 APIs,
+  Apache-2.0, confirmed via repo license metadata), to benchmark EnterpriseSynth's generated data
+  against an execution-dependent baseline.
+- **Cold-start validation set:** a small, hand-authored set of synthetic "enterprise-internal"
+  specs (CRM, ticketing, HRIS, internal billing) modeled on real enterprise API shapes — not yet
+  authored, tracked as an open item. Required because public specs may already be in pretraining
+  data; evaluating only on public specs would undermine RQ4's cold-start generalization claim.
+- **Split protocol:** 70% of API specs for training synthesis (prompt/template development happens
+  only against this split), 15% validation, 15% held out and untouched until final evaluation.
+  Split by whole spec, not by generated example, to avoid schema leakage across train/test.
+- **Per-spec scale:** not yet measured — will be reported once Stages 3–7 of the pipeline (§4)
+  exist and are run, not assumed in advance.
 
 ---
 
