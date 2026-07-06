@@ -278,7 +278,76 @@ for Stages 3--5. No GPU is required for generation (API-based models); a single 
 for the LoRA fine-tuning step. Runtime, trajectory counts, and eval-record counts are not yet
 measured and will be reported once the pipeline is implemented and run.
 
-% TODO next sections: Results, Discussion, Limitations, Conclusion.
+\section{Experiments}
+This section is an experimental \textit{protocol} -- what will be measured once the pipeline
+(Section~3) is implemented -- not a report of results. Every metric below is a placeholder ("to be
+measured") pending actual pipeline runs.
+
+\subsection{Experimental Goals}
+RQ1: can EnterpriseSynth accurately extract API semantics from real-world OpenAPI specifications
+(Experiment 1)? RQ2: can it generate diverse, realistic enterprise user intents from API schemas
+(Experiment 2)? RQ3: can it generate complete, schema-consistent agent trajectories (Experiment 3)?
+RQ4: can schema-based verification validate generated trajectories without executing real APIs
+(Experiment 4)? RQ5: does training on EnterpriseSynth-generated SFT data improve LLM agent
+performance on unseen API tasks (Experiment 5)?
+
+\subsection{Dataset Collection}
+Evaluated on real-world OpenAPI specifications only -- no synthetic specs are used in this
+protocol (the cold-start set from Section~4 is a separate, explicitly labeled condition). Endpoint
+counts below are verified directly against each API's live spec, not estimated:
+
+\begin{center}
+\begin{tabular}{lll}
+\textbf{API} & \textbf{Source} & \textbf{Endpoints} \\
+GitHub REST API & APIs.guru & 551 paths / 845 path-method \\
+Stripe API & APIs.guru & 299 paths / 446 path-method \\
+Slack API & APIs.guru & 174 paths / 174 path-method \\
+\end{tabular}
+\end{center}
+
+Additional specs drawn from the stratified APIs.guru sample (Section~3.2); Azure and Google specs
+are reached through APIs.guru itself, not separate repositories.
+
+\subsection{Experiment 1: OpenAPI Schema Understanding}
+Evaluates whether the Schema Parser (Stage 1) correctly parses real-world specs, checked against
+the specification itself. Metrics: Endpoint Extraction Accuracy, Parameter Extraction Accuracy
+(required/optional, types, constraints), Schema Extraction Accuracy (request/response bodies,
+object definitions), Authentication Extraction Accuracy (API keys, OAuth, JWT, Basic). Results:
+to be measured for all three APIs above once Stage 1 is implemented.
+
+\subsection{Experiment 2: Intent Generation Evaluation}
+Evaluates whether the Intent Synthesis Agent (Stage 3) generates realistic enterprise user intents.
+Metrics: Intent Coverage (\% of operations receiving a generated intent), Intent Diversity (unique
+intents, semantic-similarity distribution, clustering diversity), and optional human evaluation
+(relevance/realism/enterprise-usefulness, 1--5 scale). Results: to be measured.
+
+\subsection{Experiment 3: Agent Trajectory Generation}
+Evaluates whether the Trajectory Generator (Stage 5) produces complete tool-use trajectories (user
+intent $\rightarrow$ planning $\rightarrow$ API calls $\rightarrow$ arguments $\rightarrow$
+expected response). Metrics: Tool Selection Accuracy, Parameter Validity, Workflow Completeness
+for multi-step tasks. Results: to be measured.
+
+\subsection{Experiment 4: Schema-Based Verification}
+The central novelty claim: can the Schema Verification Engine (Stage 6) validate generated
+trajectories entirely offline, without executing any real API? Checks: endpoint validity, HTTP
+method validity, parameter validation (missing required fields, incorrect types, invalid enums),
+response validation. Results: to be measured (verification pass rate and invalid-cases-detected,
+per API).
+
+\subsection{Experiment 5: Downstream LLM Agent Evaluation}
+The result most central to the paper's claim: does EnterpriseSynth-generated SFT data improve
+API-use capability, evaluated on \textbf{held-out APIs not included during synthesis}? Metrics:
+task success rate, tool selection accuracy, argument correctness, workflow completion. Baselines:
+base LLM (no fine-tuning), prompt-only agent, Self-Instruct-generated data, and ToolBench where a
+live sandbox is safely available. Results: to be measured.
+
+\subsection{What Comes After Experiments}
+Once Experiments 1--5 run, the remaining sections analyze the results: Results (quantitative
+findings across all five experiments), Ablation Study (remove one pipeline component at a time --
+no knowledge graph, no verifier -- to isolate each stage's contribution), Case Studies (walk
+through generated examples end-to-end, from raw spec to verified trajectory), Discussion
+(strengths, limitations, scalability, future work), and Conclusion. Not written yet, since there
+is nothing to analyze until the pipeline exists.
 
 \bibliographystyle{plain}
 \bibliography{references}

@@ -168,21 +168,9 @@ Each stage maps onto a gap identified in the literature review (§3):
 
 ### 5.1 Research Questions (experimental)
 
-These operationalize §1's conceptual RQs into testable ones for Section 6 of the paper:
-
-- **RQ1 (schema-valid generation, operationalizes §1 RQ1):** Can EnterpriseSynth generate
-  schema-valid SFT trajectories from OpenAPI specifications?
-- **RQ2 (coverage vs. baselines):** Does EnterpriseSynth achieve broader endpoint and workflow
-  coverage than prompt-only generation or instruction-generation baselines (Self-Instruct,
-  AgentInstruct)?
-- **RQ3 (verification value, operationalizes §1 RQ2):** Does schema-aware verification (Stage 6)
-  improve the quality of generated trajectories over no verification, or over AgentInstruct-style
-  soft/post-hoc verification?
-- **RQ4 (downstream utility, operationalizes §1 RQ3):** Do models fine-tuned on
-  EnterpriseSynth-generated data perform better on enterprise API-calling tasks than an untuned
-  baseline?
-- §1's RQ4 (cold-start generalization) is not a separate experimental RQ — it is the held-out-spec
-  condition applied within RQ2 and RQ4 above (see §5.2 split protocol), not a fifth question.
+Superseded by the five-RQ breakdown in §6.1, which maps one RQ per experiment. §1's conceptual
+RQ4 (cold-start generalization) is not its own experiment — it is the held-out-spec condition
+applied within Experiments 2, 3, and 5 (see §5.2 split protocol).
 
 ### 5.2 Datasets
 
@@ -298,7 +286,139 @@ This is a placeholder default pending actual budget confirmation, not a final co
 
 ---
 
-## 6. Timeline
+## 6. Experiments (Experimental Protocol)
+
+This is a protocol — what will be measured once the pipeline (§4) is implemented — not a report
+of results. Every metric below is a placeholder ("to be measured") until the corresponding
+experiment actually runs; nothing in this section should be read as a finding.
+
+### 6.1 Experimental Goals / Research Questions
+
+- **RQ1:** Can EnterpriseSynth accurately extract API semantics from real-world OpenAPI
+  specifications? (Experiment 1)
+- **RQ2:** Can EnterpriseSynth generate diverse and realistic enterprise user intents from API
+  schemas? (Experiment 2)
+- **RQ3:** Can EnterpriseSynth generate complete and schema-consistent agent trajectories?
+  (Experiment 3)
+- **RQ4:** Can schema-based verification validate generated trajectories without executing real
+  APIs? (Experiment 4)
+- **RQ5:** Does training with EnterpriseSynth-generated SFT data improve LLM agent performance on
+  unseen API tasks? (Experiment 5)
+
+### 6.2 Dataset Collection
+
+Evaluated on real-world OpenAPI specs only — **no synthetic API specifications** are used for this
+protocol (the hand-authored cold-start set in §5.2 is a separate, explicitly-labeled condition, not
+part of this real-spec evaluation set). Current evaluation set, with endpoint counts verified
+directly against each API's live spec (not estimated):
+
+| API | Source | Real endpoint statistics |
+| --- | --- | --- |
+| GitHub REST API | GitHub OpenAPI specification (via APIs.guru) | 551 paths / 845 path-method endpoints |
+| Stripe API | Stripe OpenAPI specification (via APIs.guru) | 299 paths / 446 path-method endpoints |
+| Slack API | Slack OpenAPI specification (via APIs.guru) | 174 paths / 174 path-method endpoints |
+
+Additional specs drawn from the stratified APIs.guru sample in §5.2 — note Azure and Google specs
+are reached through APIs.guru itself (already confirmed to contain both), not via separate
+repositories. Final API/endpoint counts reported once dataset collection is finalized.
+
+### 6.3 Experiment 1 — OpenAPI Schema Understanding
+
+**Objective:** evaluate whether EnterpriseSynth's Stage 1 parser correctly parses real-world API
+specs, checked against the specification itself.
+
+**Metrics:** Endpoint Extraction Accuracy (correctly extracted / total endpoints), Parameter
+Extraction Accuracy (required/optional params, types, constraints), Schema Extraction Accuracy
+(request body, response schemas, object definitions), Authentication Extraction Accuracy (API
+keys, OAuth, JWT, Basic).
+
+| API | Paths | Path+Methods | Endpoint Extraction Accuracy | Parameter Accuracy | Schema Accuracy |
+| --- | --- | --- | --- | --- | --- |
+| GitHub | 551 | 845 | to be measured | to be measured | to be measured |
+| Stripe | 299 | 446 | to be measured | to be measured | to be measured |
+| Slack | 174 | 174 | to be measured | to be measured | to be measured |
+
+### 6.4 Experiment 2 — Intent Generation Evaluation
+
+**Objective:** can the Intent Synthesis Agent (Stage 3) generate realistic enterprise user intents
+from a spec's operations?
+
+**Metrics:** Intent Coverage (% of operations receiving at least one generated intent), Intent
+Diversity (unique intents, semantic-similarity distribution, clustering diversity), and optional
+human evaluation (relevance/realism/enterprise-usefulness, 1–5 scale).
+
+| API | Generated intents | Coverage | Diversity | Human score |
+| --- | --- | --- | --- | --- |
+| GitHub | to be measured | to be measured | to be measured | to be measured |
+| Stripe | to be measured | to be measured | to be measured | to be measured |
+| Slack | to be measured | to be measured | to be measured | to be measured |
+
+### 6.5 Experiment 3 — Agent Trajectory Generation
+
+**Objective:** can the Trajectory Generator (Stage 5) produce complete tool-use trajectories (user
+intent → planning steps → API calls → arguments → expected response)?
+
+**Metrics:** Tool Selection Accuracy (correct endpoint chosen), Parameter Validity (present,
+correctly typed, schema-compliant), Workflow Completeness (for multi-step tasks, e.g. create
+customer → retrieve customer ID → create invoice — does the full chain exist?).
+
+| Metric | Result |
+| --- | --- |
+| Complete trajectories | to be measured |
+| Tool selection accuracy | to be measured |
+| Parameter validity | to be measured |
+| Multi-step workflow success | to be measured |
+
+### 6.6 Experiment 4 — Schema-Based Verification
+
+**Objective:** the core novelty claim — can the Schema Verification Engine (Stage 6) validate
+generated trajectories entirely offline, without executing any real API?
+
+**Checks:** endpoint validity (does it exist in the spec?), HTTP method validity (e.g. rejecting
+`GET /createUser` when the spec defines `POST /createUser`), parameter validation (missing
+required fields, incorrect types, invalid enum values), response validation (output conforms to
+the declared response schema).
+
+| API | Generated trajectories | Verification pass rate | Invalid cases detected |
+| --- | --- | --- | --- |
+| GitHub | to be measured | to be measured | to be measured |
+| Stripe | to be measured | to be measured | to be measured |
+| Slack | to be measured | to be measured | to be measured |
+
+### 6.7 Experiment 5 — Downstream LLM Agent Evaluation ⭐
+
+**Objective:** the result that matters most for the paper's central claim — does
+EnterpriseSynth-generated SFT data actually improve API-use capability, evaluated on **held-out
+APIs not included during synthesis** (§5.2 split).
+
+**Metrics:** task success rate, tool selection accuracy, argument correctness, workflow completion.
+
+**Baselines:** base LLM (no fine-tuning), prompt-only agent, Self-Instruct-generated data, and —
+where feasible — ToolBench (per §5.3, only where a live sandbox is safely available).
+
+| Method | Task success | Tool accuracy | Argument accuracy |
+| --- | --- | --- | --- |
+| Base LLM | to be measured | to be measured | to be measured |
+| Prompt-only agent | to be measured | to be measured | to be measured |
+| Self-Instruct | to be measured | to be measured | to be measured |
+| EnterpriseSynth | to be measured | to be measured | to be measured |
+
+### 6.8 What Comes After Experiments
+
+Once Experiments 1–5 actually run, the remaining paper sections analyze the results — not written
+yet, since there is nothing to analyze until the pipeline exists:
+
+- **Results** — quantitative findings across all five experiments.
+- **Ablation Study** — remove one pipeline component at a time (e.g., no knowledge graph, no
+  verifier) to isolate each stage's contribution.
+- **Case Studies** — walk through a few generated examples end-to-end, from raw OpenAPI spec to
+  final verified trajectory.
+- **Discussion** — strengths, limitations, scalability, future work.
+- **Conclusion** — summarize problem, solution, and main findings.
+
+---
+
+## 7. Timeline
 
 | Date | Milestone |
 | --- | --- |
@@ -308,7 +428,7 @@ This is a placeholder default pending actual budget confirmation, not a final co
 
 ---
 
-## 7. Open Items
+## 8. Open Items
 
 - Resolve the EnterpriseBench naming collision (see flag at top).
 - Verify per-spec licensing before redistributing any derived dataset built on APIs.guru/ToolBench
