@@ -2,10 +2,10 @@
 
 A mock-reviewer pass on the current state of the paper (`PAPER.md`/`paper/main.tex`) and repo,
 written to surface what an actual AAAI/MLinPL reviewer would flag — not to reassure. See
-`RESULTS.md` for the numbers referenced below and `DESIGN_DOC.md` §10 for the running open-items
+`RESULTS.md` for the numbers referenced below and `DESIGN_DOC.md` §13 for the running open-items
 list.
 
-> **Update:** this is a point-in-time snapshot. Since it was written, items 1–3 and 5 of the
+> **Update:** this is a point-in-time snapshot. Since it was written, all five items of the
 > Recommendation section below have been resolved (Self-Instruct baseline run and scaled to 3
 > held-out APIs, §4.4/§7 Haiku ablation-arm inconsistency fixed by actually implementing it, PDF
 > compiled and visually checked, EnterpriseBench naming collision resolved). See `RESULTS.md` for
@@ -35,6 +35,10 @@ list.
    AAAI/MLinPL reviewers will ask whether any of these effects (especially Experiment 5's
    12.5%→87.5%) survive at the paper's stated target scale (~65 specs, 7–8B model). Right now
    there is no evidence either way — this is the single biggest risk to the paper's central claim.
+   **[Partially resolved since this review was written]** the single-held-out-API framing is now
+   stale — Experiment 5 scaled to 3 held-out APIs (Zoom, DigitalOcean, Spotify), and the effect
+   turned out non-uniform (a loss on DigitalOcean), which is a more informative answer than "no
+   evidence either way" but still doesn't reach the paper's target scale.
 2. **Experiment 3's headline numbers (100%/100%) are self-consistency, not generalization**,
    because the same model generated both the intents and the tool selections. The paper says this
    plainly, but a reviewer will still discount these numbers heavily until an independently-
@@ -43,6 +47,9 @@ list.
    AgentInstruct are all named as planned comparisons (§4.3) but none exist in any experiment or
    ablation. Without them, "EnterpriseSynth achieves broader coverage than X" (RQ2) is an
    unaddressed research question, not a supported claim. This is the second-biggest gap.
+   **[Partially resolved since this review was written]** a real, faithfully-implemented
+   Self-Instruct baseline now backs RQ2 (see `RESULTS.md`) — ToolBench, prompt-only-agent, and
+   AgentInstruct baselines are still not run.
 4. **Experiment 5 substitutes a 0.5B model for the paper's actual 7–8B target**, for real,
    disclosed hardware reasons — but a reviewer may read this as "the core claim was never tested
    at the scale the paper is about." The honest framing (§6.7's "hardware-driven scope change")
@@ -54,11 +61,12 @@ list.
    catching our own invalid "sequencing-language" proxy metric — was judged more valuable to
    report than to hide by silently dropping the ablation. A reviewer may not find that framing
    sufficient on its own.)
-6. **The PDF has never actually been compiled.** No LaTeX distribution was available in the
-   development environment (installing one required sudo access that wasn't available), so
-   `paper/main.tex` has only been checked for balanced `\begin`/`\end` environments and existing
-   figure files — never rendered. There could be layout, overfull-hbox, or reference errors that
-   only a real compile would surface.
+6. **[Resolved since this review was written]** The PDF has never actually been compiled. No
+   LaTeX distribution was available in the development environment (installing one required sudo
+   access that wasn't available), so `paper/main.tex` had only been checked for balanced
+   `\begin`/`\end` environments and existing figure files — never rendered. Resolved by installing
+   `tectonic` (a sudo-free, standalone LaTeX engine); the paper now compiles cleanly to a 30-page
+   PDF, visually inspected page-by-page for layout and overflow issues.
 7. **[Resolved since this review was written]** The EnterpriseBench naming collision
    (arXiv:2510.27287 already used that name for a different benchmark) was resolved by renaming
    our evaluation dataset to `EnterpriseSynth-Eval`; see `DESIGN_DOC.md`'s top-of-file note.
@@ -66,11 +74,13 @@ list.
    pilot scale saturates the chosen metrics. They're accurate, but not visually informative — a
    reviewer skimming figures only will see "everything is 100%" without reading the text that
    explains why that's not the interesting part of those two experiments.
-9. **Model choice in §4.4 (Claude Sonnet 5 for generation, Claude Haiku 4.5 for an ablation arm)
-   was never actually implemented as an ablation** — the paper's Models subsection describes a
-   planned LLM-based semantic-check ablation arm on top of the deterministic verifier that does
-   not appear anywhere in the actual Ablation Study (§7). This is a live inconsistency between
-   §4.4's plan and §7's execution that should be resolved — either build it or remove the mention.
+9. **[Resolved since this review was written]** Model choice in §4.4 (Claude Sonnet 5 for
+   generation, Claude Haiku 4.5 for an ablation arm) was never actually implemented as an
+   ablation — the paper's Models subsection described a planned LLM-based semantic-check ablation
+   arm on top of the deterministic verifier that did not appear anywhere in the actual Ablation
+   Study (§7). Resolved by implementing it as Ablation A5: confirms the deterministic gate is
+   blind to semantic errors by construction, and that Haiku catches 100% of them but with a real,
+   disclosed 33% false-positive rate on GitHub (see `RESULTS.md`).
 
 ## Recommendation
 
