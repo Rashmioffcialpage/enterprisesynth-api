@@ -620,8 +620,49 @@ claims.
 
 **What this pilot does not show:** it does not show the effect holds for the paper's actual target
 model scale (7-8B), for the full ~65-spec stratified training sample (vs. this pilot's 45
-examples), or against the Self-Instruct/ToolBench/prompt-only-agent baselines specified in
-§5.3 — those require either cloud GPU access or further implementation time, both future work.
+examples), or against the ToolBench/prompt-only-agent baselines specified in §5.3 — those require
+either cloud GPU access or further implementation time, both future work.
+
+### 6.7.1 Does 12.5%→87.5% Generalize? Scaling to Three Held-Out APIs
+
+The single-Zoom result above is exactly the kind of number that could be a favorable draw rather
+than a representative effect (`REVIEW.md` flagged this explicitly as the top risk to the central
+claim). `scripts/scale_experiment5_heldout.py` tests this directly: trains each of the three
+models (base, Self-Instruct-tuned, EnterpriseSynth-tuned) **once**, then evaluates all three
+against **three** independent held-out APIs — Zoom (373 endpoints), plus two more never used in
+training: **DigitalOcean** (290 endpoints) and **Spotify** (88 endpoints).
+
+| Held-out API | Base | Self-Instruct-tuned | EnterpriseSynth-tuned |
+| --- | --- | --- | --- |
+| Zoom | 12.5% | 25.0% | 75.0% |
+| DigitalOcean | 31.2% | **50.0%** | 43.8% |
+| Spotify | 12.5% | 25.0% | 43.8% |
+
+**The honest result: EnterpriseSynth does not win on all three.** It beats Self-Instruct on Zoom
+(75.0% vs. 25.0%) and Spotify (43.8% vs. 25.0%), but **loses to Self-Instruct on DigitalOcean**
+(43.8% vs. 50.0%). The Zoom number itself is also lower on this retrained run (75.0%) than the
+original single-run 87.5% reported above — expected run-to-run variance, since neither the LoRA
+weight initialization nor training data order is seed-fixed in the current implementation, but a
+useful reminder that a single run's headline number carries real noise.
+
+**This is reported as the central finding it is, not minimized.** The original 87.5% pilot number
+was directionally correct (EnterpriseSynth beats both baselines on 2/3 held-out APIs and beats the
+untuned base on all 3) but was not fully representative of the effect size — three draws show a
+range from a loss to a 3x margin, not a uniform ~7x improvement. Parameter Validity, interestingly,
+favors EnterpriseSynth more consistently (58.3%/100%/71.4% vs. Self-Instruct's 50%/100%/25% —
+tied on DigitalOcean, ahead on Zoom and Spotify), suggesting the schema-grounded verified training
+data may transfer more reliably to argument correctness than to tool selection specifically, though
+three data points is nowhere near enough to make that a confident claim.
+
+A plausible, explicitly unconfirmed hypothesis for DigitalOcean's reversal: DigitalOcean's
+infrastructure/DevOps-flavored REST conventions may structurally resemble GitHub's (both are
+developer-infrastructure APIs) more closely than Zoom's or Spotify's do, giving Self-Instruct's
+GitHub-heavy bootstrap (recall §6.7's finding that its "invented" endpoints were disproportionately
+real GitHub ones) an incidental transfer advantage on this specific held-out API that doesn't
+generalize to communication (Zoom) or media (Spotify) APIs. This is a hypothesis to test, not a
+finding — it would need more held-out APIs per domain category to actually confirm.
+
+Full per-API detail: `data/generated/experiment5_multi_api_results.json`.
 
 ### 6.8 What Comes After Experiments
 

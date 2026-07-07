@@ -109,6 +109,28 @@ the base model's pretraining familiarity with GitHub's public API leaking throug
 grounding. Strengthens rather than weakens the cold-start case: truly private internal APIs
 wouldn't have this incidental advantage.
 
+**Does 12.5%→87.5% generalize? Scaled to 3 held-out APIs — and the honest answer is no, not
+uniformly** (`scripts/scale_experiment5_heldout.py`, data:
+`experiment5_multi_api_results.json`). Trained each model once, evaluated against Zoom, plus two
+more never-trained-on APIs: DigitalOcean (290 endpoints) and Spotify (88 endpoints).
+
+| Held-out API | Base | Self-Instruct | EnterpriseSynth |
+| --- | --- | --- | --- |
+| Zoom | 12.5% | 25.0% | 75.0% |
+| DigitalOcean | 31.2% | **50.0%** | 43.8% |
+| Spotify | 12.5% | 25.0% | 43.8% |
+
+EnterpriseSynth beats Self-Instruct on 2/3 (Zoom, Spotify) but **loses on DigitalOcean** (43.8% vs.
+50.0%). The retrained Zoom number (75.0%) is also lower than the original single-run 87.5% —
+expected variance, since neither weight init nor training-data order is seed-fixed. The original
+87.5% was directionally right but not fully representative: three draws range from a loss to a 3x
+margin, not a uniform ~7x effect. Parameter Validity favors EnterpriseSynth more consistently
+(58.3%/100%/71.4% vs. 50%/100%/25%) — a hint that verified data may transfer better to argument
+correctness than tool selection, though 3 data points isn't enough to be confident. Unconfirmed
+hypothesis for DigitalOcean's reversal: its DevOps-flavored REST conventions may structurally
+resemble GitHub's more than Zoom's/Spotify's do, giving Self-Instruct's GitHub-heavy bootstrap an
+incidental edge there specifically.
+
 ## Ablation Study
 
 `scripts/run_ablation_study.py` (A1/A3/A4) + Experiment 4's data (A2) ·
@@ -178,10 +200,13 @@ before serving as a hard gate rather than an advisory signal.
   only after adversarial testing forced real fixes; the pre-fix rate (57–80%) is reported, not
   hidden.
 - EnterpriseSynth-generated SFT data measurably improves tool-selection accuracy on a genuinely
-  unseen API (12.5% → 87.5%); exact-field-name generalization remains a real, open limitation.
-- **A real baseline now backs this up:** Self-Instruct-fine-tuned data only reaches 25% on the same
-  held-out set — any fine-tuning helps, but schema-grounded verified data helps ~3.5x more,
-  isolating training-data quality as the source of the gap, not model or methodology.
+  unseen API (12.5% → 87.5% on Zoom); exact-field-name generalization remains a real, open
+  limitation.
+- **A real baseline now backs this up, but the effect is not uniform.** Self-Instruct-fine-tuned
+  data only reaches 25% on Zoom (vs. EnterpriseSynth's 87.5%), isolating training-data quality as
+  a real factor. But scaling to 3 held-out APIs shows EnterpriseSynth **loses to Self-Instruct on
+  DigitalOcean** (43.8% vs. 50.0%) and wins by a smaller margin on Spotify (43.8% vs. 25%) — the
+  87.5% Zoom number was directionally right but not fully representative of the effect size.
 - Explicit Intent Generation and Schema Verification are both real, load-bearing components (A1,
   A2). A cheap LLM semantic check (A5) adds genuine value for a distinct error class the
   deterministic gate can't see, but has a real, disclosed false-positive rate (33% on GitHub).
@@ -192,7 +217,8 @@ before serving as a hard gate rather than an advisory signal.
 
 - Scale from 3–4 APIs / 45 examples to the full ~65-spec stratified sample (`DESIGN_DOC.md` §5.2).
 - Real fine-tuning at the paper's target model scale (7–8B) once GPU access is available.
-- Scale the Self-Instruct/EnterpriseSynth comparison to more held-out APIs beyond Zoom.
+- Investigate DigitalOcean's reversal (Self-Instruct beating EnterpriseSynth there) — more
+  held-out APIs per domain category needed to test the "structural similarity to GitHub" hypothesis.
 - Implement the remaining baselines: ToolBench, prompt-only agent.
 - Better metrics for A3/A4 (LLM-judged specificity; deliberately multi-step task construction) to
   move those two ablations from inconclusive to a real answer.

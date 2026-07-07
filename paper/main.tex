@@ -571,6 +571,38 @@ Right: training loss across the 3 fine-tuning epochs.}
 \label{fig:exp5}
 \end{figure}
 
+\subsubsection{Does 12.5\%$\rightarrow$87.5\% Generalize? Scaling to Three Held-Out APIs}
+The single-Zoom result is exactly the kind of number that could be a favorable draw rather than a
+representative effect. We test this directly: train each of the three models (base, Self-Instruct,
+EnterpriseSynth) \textit{once}, then evaluate all three against three independent held-out APIs --
+Zoom, plus DigitalOcean (290 endpoints) and Spotify (88 endpoints), neither used in any training
+data.
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\textbf{Held-out API} & \textbf{Base} & \textbf{Self-Instruct} & \textbf{EnterpriseSynth} \\
+Zoom & 12.5\% & 25.0\% & 75.0\% \\
+DigitalOcean & 31.2\% & \textbf{50.0\%} & 43.8\% \\
+Spotify & 12.5\% & 25.0\% & 43.8\% \\
+\end{tabular}
+\end{center}
+
+\textbf{The honest result: EnterpriseSynth does not win on all three.} It beats Self-Instruct on
+Zoom and Spotify, but \textbf{loses to Self-Instruct on DigitalOcean} (43.8\% vs.\ 50.0\%). The
+retrained Zoom number (75.0\%) is also lower than the original single-run 87.5\% -- expected
+variance, since neither LoRA weight initialization nor training-data order is seed-fixed. The
+original 87.5\% was directionally right (EnterpriseSynth beats the untuned base on all three, and
+beats Self-Instruct on 2/3) but not fully representative of the effect size: three draws range
+from a loss to a 3x margin, not a uniform $\sim$7x improvement. Parameter Validity favors
+EnterpriseSynth more consistently across all three APIs, hinting that verified training data may
+transfer more reliably to argument correctness than to tool selection -- though three data points
+is far from sufficient to confirm that. A plausible, explicitly unconfirmed hypothesis for
+DigitalOcean's reversal: its infrastructure/DevOps-flavored REST conventions may structurally
+resemble GitHub's (recall Self-Instruct's bootstrap was disproportionately GitHub-shaped) more
+than Zoom's or Spotify's communication/media conventions do, giving Self-Instruct's GitHub-heavy
+training an incidental transfer advantage there specifically.
+
 \subsection{What Comes After Experiments}
 Once Experiments 1--5 run, the remaining sections analyze the results. Results (below) covers
 quantitative findings across all five experiments; the Ablation Study (Section~7) covers which
@@ -659,6 +691,14 @@ schema-free bootstrapped data on the identical task. Argument correctness laggin
 selection is itself informative: the model learned which endpoint to call but not always the
 exact field names a new schema requires (Section~6.7) -- exactly the failure mode Stage 6
 verification exists to catch downstream.
+
+\textbf{This does not hold uniformly once scaled to more held-out APIs, and we report that
+plainly.} Training each model once and evaluating against Zoom, DigitalOcean, and Spotify:
+EnterpriseSynth beats Self-Instruct on Zoom (75.0\% vs.\ 25.0\%, retrained) and Spotify (43.8\%
+vs.\ 25.0\%), but \textbf{loses to it on DigitalOcean} (43.8\% vs.\ 50.0\%). The single-Zoom 87.5\%
+figure above was directionally correct but not fully representative of the effect size -- see
+Section~6.7's expanded discussion for the full three-API table and an unconfirmed hypothesis for
+why DigitalOcean specifically reverses the pattern.
 
 \subsection{Comparison With Existing Approaches}
 
