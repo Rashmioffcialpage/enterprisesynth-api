@@ -468,6 +468,36 @@ and wrong-type detection were the two categories that required real bug fixes to
 \label{fig:exp4}
 \end{figure}
 
+\subsubsection{Ablation Arm: Claude Haiku 4.5 Semantic-Plausibility Check (RQ3)}
+The deterministic verifier only checks structure (types, required fields, endpoint existence) --
+it has no notion of whether a parameter \textit{value} makes business sense, so a trajectory with
+a nonsensical value can still pass Stage 6 if well-typed. We test whether a cheap LLM catches that
+class of error: for each of the 45 valid trajectories, we ask Claude Haiku 4.5 whether it is
+semantically plausible, and separately construct a corruption (negate a numeric parameter, or
+replace a string parameter with an obvious placeholder) that we confirm still passes the
+deterministic verifier structurally, then ask the same question of the corrupted version.
+
+\begin{center}
+\begin{tabular}{llll}
+\textbf{API} & \textbf{Valid judged plausible} & \textbf{Corruption still structurally valid} & \textbf{...caught by Haiku} \\
+GitHub & 10/15 (66.7\%) & 15/15 (100\%) & 15/15 (100\%) \\
+Stripe & 15/15 (100\%) & 15/15 (100\%) & 15/15 (100\%) \\
+Slack & 13/15 (86.7\%) & 15/15 (100\%) & 15/15 (100\%) \\
+\end{tabular}
+\end{center}
+
+Two findings. First, as designed: 100\% of semantically-corrupted trajectories pass the
+deterministic verifier (confirming it cannot see this error class by construction) and 100\% are
+caught by the Haiku check -- genuine incremental value for a real, distinct error class. Second,
+reported rather than hidden: the semantic checker has a real false-positive rate, worst on GitHub
+(33\%). Inspecting the flagged cases shows Haiku being overly literal rather than catching real
+problems -- e.g. flagging correct use of repository IDs instead of names as "unverifiable," or
+expecting an explicit \texttt{admin\_only} parameter on an endpoint where the endpoint itself is
+the enforcement mechanism (no such parameter exists in the spec). The Haiku arm demonstrably adds
+value for its target error class but is not free -- it would need calibration (confidence
+thresholds, or restricting checks to specific parameter types like amounts/dates) before serving
+as a hard gate rather than an advisory signal.
+
 \subsection{Experiment 5: Downstream LLM Agent Evaluation}
 The result most central to the paper's claim: does EnterpriseSynth-generated SFT data improve
 API-use capability, evaluated on \textbf{held-out APIs not included during synthesis}? Baselines

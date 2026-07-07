@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import json
-import random
 import sys
 from pathlib import Path
 
@@ -16,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from enterprisesynth.intent_agent import IntentSynthesisAgent  # noqa: E402
 from enterprisesynth.parser import SchemaParser  # noqa: E402
+from enterprisesynth.sampling import sample_and_distract  # noqa: E402
 from enterprisesynth.verifier import SchemaVerificationEngine  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -55,10 +55,7 @@ def build_sft_training_set() -> list[dict]:
             for item in intents_by_api[api_name]
             if (item["method"], item["path"]) in by_key
         ]
-        source_keys = {(e.method, e.path) for e in source_endpoints}
-        rng = random.Random(SEED)
-        pool = [e for e in schema.endpoints if (e.method, e.path) not in source_keys]
-        distractors = rng.sample(pool, min(10, len(pool)))
+        _, distractors = sample_and_distract(schema, seed=SEED, exclude=source_endpoints)
         candidates = [
             {"method": e.method, "path": e.path, "operation_id": e.operation_id}
             for e in (source_endpoints + distractors)
@@ -100,10 +97,9 @@ def build_heldout_eval_set() -> list[dict]:
         raw = json.load(f)
     schema = parser.parse(raw)
 
-    rng = random.Random(SEED)
-    sample = rng.sample(schema.endpoints, min(SAMPLE_SIZE, len(schema.endpoints)))
-    pool = [e for e in schema.endpoints if e not in sample]
-    distractors = rng.sample(pool, min(15, len(pool)))
+    sample, distractors = sample_and_distract(
+        schema, seed=SEED, sample_size=SAMPLE_SIZE, n_distractors=15
+    )
     candidates = sample + distractors
 
     eval_examples = []

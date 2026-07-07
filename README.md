@@ -19,6 +19,14 @@ existing tool-use training data or eval suite for it.
 - MLinPL 2026 — deadline Aug 1, 2026
 - AAAI 2027 Workshop on Enterprise AI Evaluation — deadline Jul 28, 2026
 
+## ⚠ Open decision: eval-suite naming collision
+
+The paper's eval suite is currently referred to informally as "EnterpriseBench." That name is
+already taken by arXiv:2510.27287 ("Can LLMs Help You at Work?", Oct 2025), an unrelated
+live-sandbox enterprise agent benchmark. This needs to be resolved (rename, or explicitly
+reframe as complementary and cite it) before submission — see the flag at the top of
+`DESIGN_DOC.md` for the full writeup and candidate names.
+
 ## Repository layout
 
 - `DESIGN_DOC.md` — full design, literature review, methodology, all measured results

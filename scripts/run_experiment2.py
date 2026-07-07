@@ -7,7 +7,6 @@ diversity proxy. Raw output is saved to data/generated/experiment2_intents.json.
 from __future__ import annotations
 
 import json
-import random
 import sys
 from pathlib import Path
 
@@ -15,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from enterprisesynth.intent_agent import IntentSynthesisAgent  # noqa: E402
 from enterprisesynth.parser import SchemaParser  # noqa: E402
+from enterprisesynth.sampling import sample_and_distract  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SPECS = {
@@ -38,8 +38,7 @@ def main() -> None:
             raw = json.load(f)
         schema = parser.parse(raw)
 
-        rng = random.Random(SEED)
-        sample = rng.sample(schema.endpoints, min(SAMPLE_SIZE, len(schema.endpoints)))
+        sample, _ = sample_and_distract(schema, seed=SEED, sample_size=SAMPLE_SIZE)
 
         api_results = []
         covered = 0

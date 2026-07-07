@@ -500,6 +500,50 @@ A verifier is only as good as the structured representation it checks against; t
 first evidence that the two are now consistent for these three APIs specifically, not a general
 guarantee for arbitrary future specs.
 
+### 6.6.1 Ablation Arm — Claude Haiku 4.5 Semantic-Plausibility Check (RQ3)
+
+§5.4 names an optional ablation arm layering Claude Haiku 4.5 on top of the deterministic gate.
+This was flagged in a repo audit
+([issue #1](https://github.com/Rashmioffcialpage/enterprisesynth-api/issues/1)) as described but
+never implemented — it now is (`src/enterprisesynth/semantic_checker.py`,
+`scripts/run_ablation_haiku.py`).
+
+**The actual claim being tested:** the deterministic verifier only checks structure (types,
+required fields, endpoint existence) — it has no notion of whether a parameter *value* makes
+business sense. A trajectory can pass Stage 6 with a nonsensical value (a wildly negative charge
+amount, an obvious placeholder string) as long as the type is right. Does a cheap LLM catch that
+class of error?
+
+**Method:** for each of the 45 valid Experiment 3 trajectories, (a) ask Haiku whether the
+trajectory is semantically plausible for its intent, and (b) construct a new corruption —
+negate a numeric parameter or replace a string parameter with an obvious placeholder — confirm via
+the Stage 6 verifier that it **still passes structurally** (proving the deterministic gate cannot
+see this error class by design), then ask Haiku the same plausibility question.
+
+| API | Valid trajectories judged plausible | Implausible corruptions still structurally valid | ...caught by Haiku |
+| --- | --- | --- | --- |
+| GitHub | 10/15 (66.7%) | 15/15 (100%) | 15/15 (100%) |
+| Stripe | 15/15 (100%) | 15/15 (100%) | 15/15 (100%) |
+| Slack | 13/15 (86.7%) | 15/15 (100%) | 15/15 (100%) |
+
+**Two real findings, not one.** First: confirmed as designed — 100% of the semantically-corrupted
+trajectories pass the deterministic verifier (it cannot see this error class) and 100% are caught
+by the Haiku check. This is genuine incremental value: a real class of error the structural gate
+is blind to by construction, caught by a cheap LLM layered on top.
+
+Second, and reported rather than hidden: **the semantic checker has a real false-positive rate**,
+worst on GitHub (33%, 5/15 valid trajectories wrongly flagged). Inspecting the actual flagged
+cases shows Haiku being overly literal, not detecting real problems — e.g. flagging a trajectory
+for using repository IDs instead of names ("impossible to verify they correspond to the correct
+repos"), when IDs are the correct and more precise way to call the API; or flagging GitHub's tag
+protection endpoint for lacking an explicit `admin_only` parameter, when the endpoint itself *is*
+the enforcement mechanism the intent asked for — no such parameter exists in the spec. **Honest
+conclusion:** the Haiku arm demonstrably adds value for the specific error class it was designed
+to catch (semantically-implausible-but-structurally-valid values), but is not free — it introduces
+a real, API/domain-dependent false-positive rate that would need calibration (e.g. a
+higher-confidence threshold, or restricting checks to specific parameter types like amounts/dates)
+before being deployed as a hard gate rather than an advisory signal.
+
 ### 6.7 Experiment 5 — Downstream LLM Agent Evaluation ⭐
 
 **Objective:** the result that matters most for the paper's central claim — does

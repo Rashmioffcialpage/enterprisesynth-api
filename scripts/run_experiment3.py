@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from enterprisesynth.parser import SchemaParser  # noqa: E402
+from enterprisesynth.sampling import sample_and_distract  # noqa: E402
 from enterprisesynth.trajectory_agent import TrajectoryGenerator  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -51,11 +52,10 @@ def main() -> None:
             for item in intents_by_api[api_name]
             if (item["method"], item["path"]) in by_key
         ]
-        source_keys = {(e.method, e.path) for e in source_endpoints}
-
-        rng = random.Random(SEED)
-        pool = [e for e in schema.endpoints if (e.method, e.path) not in source_keys]
-        distractors = rng.sample(pool, min(N_DISTRACTORS, len(pool)))
+        _, distractors = sample_and_distract(
+            schema, seed=SEED, n_distractors=N_DISTRACTORS, exclude=source_endpoints
+        )
+        shuffle_rng = random.Random(SEED)
 
         api_results = []
         correct_selection = 0
@@ -69,7 +69,7 @@ def main() -> None:
                 continue
 
             candidates = source_endpoints + distractors
-            rng.shuffle(candidates)
+            shuffle_rng.shuffle(candidates)
 
             for intent_text in item["intents"]:
                 total_trials += 1

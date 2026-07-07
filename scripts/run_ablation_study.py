@@ -16,7 +16,6 @@ A4 (endpoint-only vs full-API context): FullContextIntentAgent adds the other en
 from __future__ import annotations
 
 import json
-import random
 import sys
 from pathlib import Path
 
@@ -28,6 +27,7 @@ from enterprisesynth.ablation_agents import (  # noqa: E402
     NoIntentTrajectoryAgent,
 )
 from enterprisesynth.parser import SchemaParser  # noqa: E402
+from enterprisesynth.sampling import sample_and_distract  # noqa: E402
 from enterprisesynth.verifier import SchemaVerificationEngine  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -43,11 +43,9 @@ SEED = 42
 
 
 def sampled_endpoints(schema, seed=SEED):
-    rng = random.Random(seed)
-    sample = rng.sample(schema.endpoints, min(SAMPLE_SIZE, len(schema.endpoints)))
-    pool = [e for e in schema.endpoints if e not in sample]
-    distractors = rng.sample(pool, min(N_DISTRACTORS, len(pool)))
-    return sample, distractors
+    return sample_and_distract(
+        schema, seed=seed, sample_size=SAMPLE_SIZE, n_distractors=N_DISTRACTORS
+    )
 
 
 def run_a1_without_intent():

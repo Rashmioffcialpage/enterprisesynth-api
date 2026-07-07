@@ -1,0 +1,1400 @@
+{
+  "GitHub": [
+    {
+      "intent": "Set up a rule so only admins can push release tags matching v*.* on our payments-service repo to prevent accidental overwrites in production.",
+      "valid_trajectory_judgment": {
+        "plausible": false,
+        "reason": "The endpoint creates a tag protection rule but the parameters lack the critical 'admin_only' or equivalent permission restriction that would actually enforce admin-only access; the pattern alone doesn't restrict who can push."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/repos/{owner}/{repo}/tags/protection",
+        "reasoning": "This tool creates a tag protection rule for a repository restricting who can push matching tags, which aligns with restricting release tag pushes to admins only.",
+        "parameters": {
+          "owner": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "repo": "payments-service",
+          "pattern": "v*.*"
+        },
+        "expected_response_summary": "Returns the newly created tag protection rule object, including its id, pattern, and creation timestamp, confirming that pushes to matching tags are now restricted."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The owner parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of an actual GitHub organization or username, making this trajectory semantically invalid despite correct structure."
+      }
+    },
+    {
+      "intent": "We need to lock down tag creation on the acme-api repository so that our CI pipeline can't be tampered with\u2014please add tag protection for anything prefixed with 'release-'.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request to protect tags matching the 'release-' prefix is semantically sound, the endpoint and parameters are appropriate for creating tag protection rules, and the pattern 'release-*' correctly translates the stated 'release-' prefix requirement."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/repos/{owner}/{repo}/tags/protection",
+        "reasoning": "This tool creates a tag protection rule for a repository matching a specified pattern, directly fulfilling the request to lock down tag creation for tags prefixed with 'release-'.",
+        "parameters": {
+          "owner": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "repo": "acme-api",
+          "pattern": "release-*"
+        },
+        "expected_response_summary": "Returns the created tag protection rule, including its id, pattern, and creation timestamp, confirming that tags matching 'release-*' are now protected."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The owner parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of a real repository owner name, making this request impossible to execute."
+      }
+    },
+    {
+      "intent": "Can you configure our infrastructure-as-code repo so that deployment tags like 'prod-*' can only be created or deleted by repository admins going forward?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request seeks to restrict 'prod-*' tags to admin-only creation/deletion, and the trajectory correctly targets a tag protection endpoint with the appropriate pattern and repository details."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/repos/{owner}/{repo}/tags/protection",
+        "reasoning": "This tool creates a tag protection rule for a matching pattern, restricting creation and deletion of matching tags to users with admin permissions on the repository.",
+        "parameters": {
+          "owner": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "repo": "infra-as-code",
+          "pattern": "prod-*"
+        },
+        "expected_response_summary": "Returns the newly created tag protection rule, including its id, pattern ('prod-*'), and creation timestamp, confirming that only admins can now create or delete matching tags."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The owner parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of an actual repository owner name, making this trajectory non-executable."
+      }
+    },
+    {
+      "intent": "Update the list of repositories that can access our org-level DOCKER_REGISTRY_PASSWORD secret to include the three new microservice repos our team just created",
+      "valid_trajectory_judgment": {
+        "plausible": false,
+        "reason": "The parameter includes 4 repository IDs but the user stated only 3 new microservice repos were created, suggesting either incomplete information about existing repos that should retain access or an unexplained extra ID being added."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "PUT",
+        "selected_path": "/orgs/{org}/actions/secrets/{secret_name}/repositories",
+        "reasoning": "This tool sets the full list of repositories permitted to access an org-level secret, which matches the need to update the access list to include the new microservice repos.",
+        "parameters": {
+          "org": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "secret_name": "DOCKER_REGISTRY_PASSWORD",
+          "selected_repository_ids": [
+            123456,
+            123457,
+            123458,
+            123459
+          ]
+        },
+        "expected_response_summary": "A 204 No Content response confirming the selected repositories list for the org secret has been updated."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The org parameter contains a placeholder value 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of an actual organization name, making this trajectory unable to execute against a real org."
+      }
+    },
+    {
+      "intent": "We're rotating which teams have access to the shared AWS_DEPLOY_KEY secret - please restrict it to only the payments-api and payments-worker repositories going forward",
+      "valid_trajectory_judgment": {
+        "plausible": false,
+        "reason": "The trajectory uses repository IDs (123456, 789012) instead of repository names, making it impossible to verify that these IDs actually correspond to the 'payments-api' and 'payments-worker' repositories as requested."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "PUT",
+        "selected_path": "/orgs/{org}/actions/secrets/{secret_name}/repositories",
+        "reasoning": "This tool sets the exact list of repositories allowed to access an org-level secret, matching the request to restrict AWS_DEPLOY_KEY to only payments-api and payments-worker.",
+        "parameters": {
+          "org": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "secret_name": "AWS_DEPLOY_KEY",
+          "selected_repository_ids": [
+            123456,
+            789012
+          ]
+        },
+        "expected_response_summary": "A 204 No Content response confirming the secret's visibility has been updated to only the specified repository IDs."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The org parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of an actual organization name, and the repository IDs are generic numbers without verification that they correspond to the named repositories 'payments-api' and 'payments-worker'."
+      }
+    },
+    {
+      "intent": "Grant the newly onboarded frontend-web and frontend-mobile repos access to the org's SENTRY_AUTH_TOKEN secret while removing the deprecated legacy-ui repo from that list",
+      "valid_trajectory_judgment": {
+        "plausible": false,
+        "reason": "The trajectory provides only numeric repository IDs without verifying they correspond to the correct repos (frontend-web, frontend-mobile) or confirming that legacy-ui's ID is excluded, making it impossible to validate the request actually fulfills the semantic intent."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "PUT",
+        "selected_path": "/orgs/{org}/actions/secrets/{secret_name}/repositories",
+        "reasoning": "This endpoint sets the complete list of repositories authorized to access an org secret, allowing us to add the two new frontend repos and exclude legacy-ui in a single call by providing the full desired repository ID list.",
+        "parameters": {
+          "org": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "secret_name": "SENTRY_AUTH_TOKEN",
+          "selected_repository_ids": [
+            123456,
+            234567
+          ]
+        },
+        "expected_response_summary": "A 204 No Content response indicating the org secret's selected repository list was successfully updated to the new set of repository IDs."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The org parameter contains 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' which is clearly a placeholder string rather than a real organization name, making this trajectory impossible to execute successfully."
+      }
+    },
+    {
+      "intent": "Pull the latest public activity feed so I can check what's happening across the platform before our morning stand-up.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request to GET /events with pagination parameters (page 1, 30 items per page) is semantically appropriate for retrieving the latest public activity feed before a morning stand-up meeting."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/events",
+        "reasoning": "The user wants the latest public activity feed across the platform, which corresponds to the public events timeline endpoint rather than feed link discovery or org-specific data.",
+        "parameters": {
+          "per_page": -1029999,
+          "page": 1
+        },
+        "expected_response_summary": "A list of recent public events across the platform, including event type, actor, repo, and timestamp for each entry."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The per_page parameter value of -1029999 is nonsensical and implausible; pagination limits should be positive integers, and this negative value cannot represent a valid number of items to retrieve."
+      }
+    },
+    {
+      "intent": "Our compliance team needs a snapshot of recent public events on the network for this week's audit report.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request for recent public events for an audit report is a legitimate use case, the endpoint and parameters are appropriate for retrieving a snapshot of events, and the pagination values (100 per page, page 1) are reasonable defaults for gathering audit data."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/events",
+        "reasoning": "This tool lists recent public events across the network, which directly matches the request for a snapshot of public events for the audit report.",
+        "parameters": {
+          "per_page": -1099999,
+          "page": 1
+        },
+        "expected_response_summary": "A paginated list of recent public GitHub events, including event type, actor, repository, and timestamp."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The per_page parameter is set to -1099999, which is a nonsensical negative value that cannot represent a valid page size for pagination."
+      }
+    },
+    {
+      "intent": "Can you fetch the current public timeline of activity? I want to scan it for anything relevant to our integration partners.",
+      "valid_trajectory_judgment": {
+        "plausible": false,
+        "reason": "The /events endpoint typically returns GitHub's public event feed which tracks repository activities, but 'integration partners' suggests the user expects partner-specific or filtered data, yet no filtering parameters are applied to target integration partners specifically."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/events",
+        "reasoning": "The request asks for the current public timeline of activity, which corresponds to listing public events across GitHub, allowing scanning for relevant integration partner activity.",
+        "parameters": {
+          "per_page": -1029999,
+          "page": 1
+        },
+        "expected_response_summary": "A paginated list of recent public GitHub events, including event types, actors, repositories, and timestamps."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The per_page parameter value of -1029999 is nonsensical; pagination limits should be positive integers, and this negative value would not retrieve the intended public timeline data."
+      }
+    },
+    {
+      "intent": "Check the details of GPG key ID 481516 on my GitHub account to confirm it's the one I use for signing our release commits",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request logically maps to retrieving a specific GPG key by ID to verify it matches the user's release signing key, and the parameter value is a concrete key ID rather than placeholder data."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/user/gpg_keys/{gpg_key_id}",
+        "reasoning": "This endpoint retrieves details for a specific GPG key by its ID for the authenticated user, matching the request to confirm the key used for signing release commits.",
+        "parameters": {
+          "gpg_key_id": -482515999
+        },
+        "expected_response_summary": "Returns details of the specified GPG key including its ID, public key, associated emails, creation date, and whether it can be used for signing."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The gpg_key_id parameter is negative (-482515999) when the user specified a positive ID (481516), making this a nonsensical value that doesn't match the stated request."
+      }
+    },
+    {
+      "intent": "I need to verify the expiration date on one of my registered GPG keys before we rotate our commit signing credentials next quarter",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request correctly uses the GPG key retrieval endpoint with a valid numeric key ID to obtain expiration date information needed for credential rotation planning, which aligns perfectly with the stated user intent."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/user/gpg_keys/{gpg_key_id}",
+        "reasoning": "This tool retrieves details of a specific GPG key registered to the authenticated user, including its expiration date, which is needed before rotating commit signing credentials.",
+        "parameters": {
+          "gpg_key_id": -1235566999
+        },
+        "expected_response_summary": "Returns the GPG key details including key ID, public key data, creation date, and expiration date."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The gpg_key_id parameter is a negative number (-1235566999), which is implausible as GPG key IDs are positive integers."
+      }
+    },
+    {
+      "intent": "Pull up the info for a specific GPG key on my profile so I can confirm its fingerprint matches what's documented in our security compliance records",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request semantically aligns with the user's goal: retrieving a specific GPG key's details (including fingerprint) from their profile to verify against compliance records is exactly what this GET endpoint would provide."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/user/gpg_keys/{gpg_key_id}",
+        "reasoning": "This endpoint retrieves detailed information for a specific GPG key on the authenticated user's profile, including its fingerprint, which can be compared against security compliance records.",
+        "parameters": {
+          "gpg_key_id": -1235566999
+        },
+        "expected_response_summary": "Returns the GPG key details including key ID, fingerprint, public key, associated emails, and creation/expiration dates."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The gpg_key_id parameter is a negative integer (-1235566999), which is semantically invalid since resource IDs are typically positive integers and this value is implausible as a real GPG key identifier."
+      }
+    },
+    {
+      "intent": "Can you pull up all the build artifacts stored in the 'payments-service' repo so I can check disk usage?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request correctly uses the GitHub artifacts endpoint with appropriate parameters (owner, repo, pagination) to retrieve all build artifacts for the payments-service repository, which directly addresses the user's goal of checking disk usage."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/repos/{owner}/{repo}/actions/artifacts",
+        "reasoning": "This tool lists all build artifacts stored in a repository, allowing the user to review artifact sizes and check disk usage for 'payments-service'.",
+        "parameters": {
+          "owner": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "repo": "payments-service",
+          "per_page": 100,
+          "page": 1
+        },
+        "expected_response_summary": "A paginated list of artifacts in the repository, including each artifact's id, name, size_in_bytes, created_at, and expiration status."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The 'owner' parameter contains a placeholder value 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of an actual GitHub organization or username, making the request impossible to execute against a real repository."
+      }
+    },
+    {
+      "intent": "I need to find every artifact named 'coverage-report' generated in the frontend-dashboard repository this month.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The API call correctly targets the artifacts endpoint with appropriate filters (owner, repo, name) and pagination, and client-side filtering by creation date is a reasonable approach for month-based filtering when the API doesn't provide native date range parameters."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/repos/{owner}/{repo}/actions/artifacts",
+        "reasoning": "This tool lists artifacts for a specific repository and supports filtering by artifact name, allowing retrieval of all 'coverage-report' artifacts from the frontend-dashboard repo; date filtering for 'this month' can be applied client-side on the returned created_at timestamps.",
+        "parameters": {
+          "owner": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "repo": "frontend-dashboard",
+          "name": "coverage-report",
+          "per_page": 100,
+          "page": 1
+        },
+        "expected_response_summary": "A paginated list of artifact objects matching the name 'coverage-report', including their id, name, size, created_at, expired status, and download URL."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The 'owner' parameter contains 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' which is clearly a placeholder string, not a real repository owner name that the user would have in their actual request."
+      }
+    },
+    {
+      "intent": "Check the acme-corp/data-pipeline repo for all uploaded CI artifacts before we clean up old storage.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The endpoint correctly retrieves CI artifacts for the specified repository with reasonable pagination parameters to support a pre-cleanup audit."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/repos/{owner}/{repo}/actions/artifacts",
+        "reasoning": "This tool lists all CI artifacts uploaded for a given repository, which directly fulfills the request to check artifacts before cleanup.",
+        "parameters": {
+          "owner": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "repo": "data-pipeline",
+          "per_page": 100,
+          "page": 1
+        },
+        "expected_response_summary": "A list of artifact objects including their IDs, names, sizes, creation dates, and expiration status for the specified repository."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The owner parameter contains 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual owner 'acme-corp' specified in the user request."
+      }
+    }
+  ],
+  "Stripe": [
+    {
+      "intent": "Remove the extra seat license item si_1N3xYzABC from Acme Corp's subscription since they downgraded their team size this quarter.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request explicitly identifies a specific subscription item ID (si_1N3xYzABC) to remove due to a team downgrade, and the DELETE operation with create_prorations is the appropriate semantic action for removing a subscription item while handling mid-cycle billing adjustments."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "DELETE",
+        "selected_path": "/v1/subscription_items/{item}",
+        "reasoning": "The request asks to remove a specific subscription item (extra seat license) identified by its item ID, which directly maps to the DeleteSubscriptionItemsItem operation.",
+        "parameters": {
+          "item": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "proration_behavior": "create_prorations"
+        },
+        "expected_response_summary": "A confirmation object indicating the subscription item si_1N3xYzABC was successfully deleted, with the subscription's proration adjusted accordingly."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The item parameter uses a placeholder value 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual subscription item ID 'si_1N3xYzABC' specified in the user request."
+      }
+    },
+    {
+      "intent": "We accidentally added a duplicate add-on line item to the Contoso account's billing subscription\u2014please delete subscription item si_9K2mTqLwe so they aren't double charged.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request correctly targets the duplicate subscription item ID (si_9K2mTqLwe) for deletion with appropriate proration behavior set to 'none' to prevent unexpected charges, matching the user's intent to prevent double billing."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "DELETE",
+        "selected_path": "/v1/subscription_items/{item}",
+        "reasoning": "The user wants to remove a specific duplicate subscription item, which directly maps to the DeleteSubscriptionItemsItem endpoint that deletes a subscription item by its ID.",
+        "parameters": {
+          "item": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "proration_behavior": "none"
+        },
+        "expected_response_summary": "A confirmation object indicating the subscription item si_9K2mTqLwe was successfully deleted, with 'deleted': true."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The item parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual subscription item ID 'si_9K2mTqLwe' that the user explicitly provided."
+      }
+    },
+    {
+      "intent": "Our customer canceled their premium support add-on effective immediately, so pull subscription item si_7Rp4WvnXZ off their active subscription.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The trajectory correctly deletes the specified subscription item with appropriate parameters (proration_behavior=none for immediate removal without refund, and clear_usage=true to reset any tracked usage) matching the customer's request to immediately remove the premium support add-on."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "DELETE",
+        "selected_path": "/v1/subscription_items/{item}",
+        "reasoning": "The request asks to remove a specific subscription item (si_7Rp4WvnXZ) from an active subscription immediately, which matches the DeleteSubscriptionItemsItem endpoint designed to remove a single item from a subscription.",
+        "parameters": {
+          "item": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "proration_behavior": "none",
+          "clear_usage": true
+        },
+        "expected_response_summary": "Returns a deleted confirmation object for the subscription item, indicating it was successfully removed from the subscription."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The item parameter is set to 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual subscription item ID 'si_7Rp4WvnXZ' that the user specified."
+      }
+    },
+    {
+      "intent": "Charge the customer's card on file $1,250 for invoice #4471 from Acme Corp's monthly subscription plan",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The amount is correctly converted to cents (125000 = $1,250), currency is appropriate, customer identifier appears legitimate, and all metadata accurately reflects the invoice details requested."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/charges",
+        "reasoning": "This tool directly charges a customer's card on file for a specific amount, matching the request to charge $1,250 for an invoice from Acme Corp's subscription plan.",
+        "parameters": {
+          "amount": -125999999,
+          "currency": "usd",
+          "customer": "cus_AcmeCorp123",
+          "description": "Invoice #4471 - Acme Corp Monthly Subscription",
+          "metadata": {
+            "invoice_number": "4471",
+            "customer_name": "Acme Corp"
+          }
+        },
+        "expected_response_summary": "A charge object confirming the $1,250 payment was successfully processed against the customer's card on file, including charge ID, status, and payment details."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The amount is specified as -125999999 (a large negative number in cents) instead of 125000 (which would be $1,250 in cents), making this a nonsensical charge that would be rejected or credit the account rather than charge it."
+      }
+    },
+    {
+      "intent": "We need to process a one-time payment of $89.99 for the premium upgrade that customer Jane Doe just requested over the phone",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The trajectory correctly converts $89.99 to 8999 cents, uses appropriate charge endpoint for one-time payment, includes reasonable customer identifier and description, and the receipt email appears plausible for Jane Doe."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/charges",
+        "reasoning": "A one-time payment for a specific amount is best handled by creating a direct charge rather than a subscription, which is for recurring billing.",
+        "parameters": {
+          "amount": -9998999,
+          "currency": "usd",
+          "customer": "cus_JaneDoe123",
+          "description": "One-time payment for Premium Upgrade requested via phone",
+          "receipt_email": "jane.doe@example.com"
+        },
+        "expected_response_summary": "A Charge object confirming the $89.99 payment was successfully processed, including charge ID, status 'succeeded', and payment details."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The amount is -9998999 (negative and approximately 111,000x the requested $89.99), which is nonsensical for a legitimate payment transaction."
+      }
+    },
+    {
+      "intent": "Please bill our client's saved payment method $3,500 as a deposit for the upcoming consulting engagement",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The amount is correctly specified in cents (350000 cents = $3,500 USD), the customer ID format is realistic, and all parameters appropriately reflect charging a saved payment method for a consulting deposit."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/charges",
+        "reasoning": "To bill a client's saved payment method for a specific amount as a one-time deposit, the Charges API is used, referencing the customer ID which has a default payment source/method on file.",
+        "parameters": {
+          "amount": -350999999,
+          "currency": "usd",
+          "customer": "cus_ABC123XYZ",
+          "description": "Deposit for upcoming consulting engagement",
+          "capture": true
+        },
+        "expected_response_summary": "A Charge object confirming the $3,500 payment was successfully processed against the customer's saved payment method, including charge ID, status 'succeeded', and receipt details."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The amount is negative (-350999999 cents) instead of positive (350000 cents for $3,500), which would credit rather than charge the customer."
+      }
+    },
+    {
+      "intent": "Can you check if card payments capability is active for our connected account acct_1Hx8Yz2eZvKYlo2C?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The trajectory correctly uses the Stripe capabilities endpoint to check the status of the card_payments capability for the specified connected account, which directly addresses the user's request."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/v1/accounts/{account}/capabilities/{capability}",
+        "reasoning": "This retrieves the status of a specific capability (card_payments) for a connected account, which directly answers whether it is active.",
+        "parameters": {
+          "account": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "capability": "card_payments"
+        },
+        "expected_response_summary": "Returns a capability object showing the id, account, and status (e.g., active, inactive, pending) of the card_payments capability."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The account parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual account ID 'acct_1Hx8Yz2eZvKYlo2C' provided in the user request."
+      }
+    },
+    {
+      "intent": "I need to confirm whether the transfers capability has been approved for merchant account acct_19HcGGBElhZTiJ3D before we enable payouts.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request correctly uses GET to retrieve the current status of the 'transfers' capability for the specified merchant account, which directly answers whether it has been approved before enabling payouts."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/v1/accounts/{account}/capabilities/{capability}",
+        "reasoning": "The user wants to check the current status of the transfers capability for a specific merchant account, which is a read-only lookup rather than a request to modify or enable it.",
+        "parameters": {
+          "account": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "capability": "transfers"
+        },
+        "expected_response_summary": "Returns the capability object showing its status (e.g., active, pending, or inactive) and whether it has been requested/approved for the specified account."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The account parameter contains 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the real account ID 'acct_19HcGGBElhZTiJ3D' that the user explicitly provided."
+      }
+    },
+    {
+      "intent": "Pull up the current status of the legacy_payments capability on account acct_1F3sQeBElhZTiJ3D, and include the requirements details in the response.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request correctly uses GET to retrieve a specific capability's status with the expand parameter to include requirements details, which aligns with the user's intent to view current status and requirements."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/v1/accounts/{account}/capabilities/{capability}",
+        "reasoning": "The user wants to view (not modify) the current status of a specific capability on a connected account, including requirements details, which matches the GET capability retrieval endpoint.",
+        "parameters": {
+          "account": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "capability": "legacy_payments",
+          "expand": [
+            "requirements"
+          ]
+        },
+        "expected_response_summary": "Returns the capability object showing its status (e.g., active, pending, inactive) along with detailed requirements information such as currently_due, past_due, and pending_verification fields."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The account parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the real account ID 'acct_1F3sQeBElhZTiJ3D' provided in the user request."
+      }
+    },
+    {
+      "intent": "We're about to run a QA pass on our subscription billing flows\u2014can you spin up a new test clock so we can simulate customer time moving forward without waiting for real billing cycles?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request asks to create a test clock for QA billing simulation, the trajectory uses the correct endpoint for creating test clocks, and the parameters (a reasonable Unix timestamp and descriptive name) are semantically appropriate for this use case."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/test_helpers/test_clocks",
+        "reasoning": "Creating a new test clock allows QA to simulate the passage of time for subscriptions without waiting for real billing cycles, which directly matches the request to 'spin up a new test clock'.",
+        "parameters": {
+          "frozen_time": -1717220199999,
+          "name": "QA Billing Flow Test Clock"
+        },
+        "expected_response_summary": "A test clock object containing its unique ID, current frozen_time, status, and creation timestamp, which can then be attached to test customers/subscriptions and advanced via the /advance endpoint."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The frozen_time value of -1717220199999 is a negative Unix timestamp representing a date in 1970, which is not a sensible starting point for a QA billing test and contradicts the intent to simulate customer time moving forward from a realistic present/future date."
+      }
+    },
+    {
+      "intent": "Set up a fresh simulated clock in our sandbox environment so the QA team can test how annual subscription renewals behave a year from now.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request appropriately uses the test_clocks endpoint to create a named sandbox clock for QA testing, and the frozen_time value (1782000000, roughly July 2026) represents a realistic point approximately one year in the future for testing annual renewal behavior."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/test_helpers/test_clocks",
+        "reasoning": "Creating a new test clock lets the QA team simulate a fresh sandbox timeline frozen at a point one year in the future to test annual subscription renewal behavior.",
+        "parameters": {
+          "frozen_time": -1782000999999,
+          "name": "QA-Annual-Renewal-Simulation"
+        },
+        "expected_response_summary": "Returns a new test clock object with its id, status 'ready', and the frozen_time set to the specified future timestamp for use in sandbox subscription testing."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The frozen_time value of -1782000999999 is a large negative Unix timestamp (representing a date in 1970, before the Unix epoch), which is nonsensical for testing behavior 'a year from now' and would not create a forward-looking simulation as requested."
+      }
+    },
+    {
+      "intent": "I need to create a new test clock in Stripe's test mode so our engineers can validate trial-to-paid conversion logic before we ship the update.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The endpoint, method, and parameters are semantically appropriate for creating a test clock in Stripe's test mode to simulate time progression for trial-to-paid conversion validation."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/test_helpers/test_clocks",
+        "reasoning": "This tool creates a new test clock in Stripe's test mode, allowing simulation of time progression to validate trial-to-paid subscription conversion logic.",
+        "parameters": {
+          "frozen_time": -1717200999999,
+          "name": "Trial-to-Paid Conversion Test Clock"
+        },
+        "expected_response_summary": "A test clock object containing its id, frozen_time, status, and creation timestamp, ready to be attached to test customers/subscriptions for simulating time-based billing events."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The frozen_time value of -1717200999999 is a negative Unix timestamp representing a date in 1970 (before epoch), which is implausible for a test clock intended to validate current trial-to-paid conversion logic."
+      }
+    },
+    {
+      "intent": "We already have enough evidence that dispute dp_1FcQ2kLxJ8 was accidental on the customer's end, so please close it out on our side since we're not submitting further evidence.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The user explicitly requests closing dispute dp_1FcQ2kLxJ8 and states they will not submit further evidence, which directly aligns with calling the dispute close endpoint with the correct dispute ID."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/disputes/{dispute}/close",
+        "reasoning": "The user wants to close out dispute dp_1FcQ2kLxJ8 without submitting further evidence, which directly corresponds to the dispute close endpoint.",
+        "parameters": {
+          "dispute": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA"
+        },
+        "expected_response_summary": "Returns the updated dispute object with status set to 'lost' (closed) confirming no further evidence will be submitted."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The dispute parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual dispute ID 'dp_1FcQ2kLxJ8' mentioned in the user request."
+      }
+    },
+    {
+      "intent": "Mark the chargeback case dp_2Nk9RtA0Bq as closed in our system \u2014 the customer withdrew their claim after we spoke with them directly.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The dispute ID format (dp_2Nk9RtA0Bq) is consistent with Stripe dispute object naming conventions, the POST /v1/disputes/{dispute}/close endpoint is the correct method for closing disputes, and the semantic context (customer withdrew claim) aligns with a legitimate closure reason."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/disputes/{dispute}/close",
+        "reasoning": "The chargeback case ID (dp_2Nk9RtA0Bq) corresponds to a dispute object, and closing it is done via the disputes close endpoint since the customer withdrew their claim.",
+        "parameters": {
+          "dispute": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA"
+        },
+        "expected_response_summary": "Returns the updated dispute object with its status set to 'lost' or 'closed', reflecting that the case has been resolved and no further action is needed."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The dispute parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual chargeback case ID 'dp_2Nk9RtA0Bq' provided by the user."
+      }
+    },
+    {
+      "intent": "Can you close out dispute ID dp_3Zx7YpWq1L for us? Finance decided it's not worth contesting given the low transaction amount.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request to close dispute ID dp_3Zx7YpWq1L using the POST /v1/disputes/{dispute}/close endpoint is semantically sound and aligns with the user's stated intent to resolve the dispute without contesting it."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/v1/disputes/{dispute}/close",
+        "reasoning": "The user wants to close a dispute rather than contest it, which directly matches the dispute close endpoint that accepts the dispute ID and marks it as resolved without further evidence submission.",
+        "parameters": {
+          "dispute": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA"
+        },
+        "expected_response_summary": "Returns the updated dispute object with status set to 'lost' (indicating the merchant accepted the dispute) and closed details reflected in the response."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The dispute parameter uses a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of the actual dispute ID 'dp_3Zx7YpWq1L' provided in the user request."
+      }
+    }
+  ],
+  "Slack": [
+    {
+      "intent": "Update my Slack status to show I'm out at a conference through Friday and won't be checking messages regularly",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The trajectory correctly uses the Slack API endpoint to set a status message with emoji and expiration time that semantically matches the user's request to indicate out-of-office availability through Friday."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/users.profile.set",
+        "reasoning": "Updating a Slack status message and emoji is done via the users.profile.set endpoint, which allows setting the profile status text, emoji, and expiration.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "user": "U123456",
+          "profile": "{\"status_text\": \"At a conference, back Friday\", \"status_emoji\": \":date:\", \"status_expiration\": 1735142400}"
+        },
+        "expected_response_summary": "Returns ok: true along with the updated profile object confirming the new status text, emoji, and expiration timestamp."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains an obvious placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real Slack API token, making this trajectory non-functional despite being semantically reasonable."
+      }
+    },
+    {
+      "intent": "Change my displayed job title in Slack from 'Marketing Coordinator' to 'Senior Marketing Coordinator' now that my promotion went through",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request correctly uses the Slack profile update endpoint to change the job title field from 'Marketing Coordinator' to 'Senior Marketing Coordinator', which directly matches the user's stated intent."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/users.profile.set",
+        "reasoning": "This tool updates a user's Slack profile fields, including the job title field, making it the correct choice for changing a displayed job title.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "user": "U12345678",
+          "profile": "{\"title\": \"Senior Marketing Coordinator\"}"
+        },
+        "expected_response_summary": "A JSON response confirming the profile update was successful and returning the updated profile object with the new title field."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real Slack API token, which would cause authentication to fail."
+      }
+    },
+    {
+      "intent": "Set my profile status to reflect that I'm working from the Chicago office this week so my team knows where to find me",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The trajectory correctly sets a clear, location-specific status message with an appropriate office emoji and a reasonable expiration timestamp (roughly one week out), which directly fulfills the user's request to inform their team of their Chicago office location this week."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/users.profile.set",
+        "reasoning": "This tool updates a user's profile, including status text and emoji, allowing the user to indicate they are working from the Chicago office this week.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "user": "U12345678",
+          "profile": "{\"status_text\": \"Working from Chicago office this week\", \"status_emoji\": \":office:\", \"status_expiration\": 1717929600}"
+        },
+        "expected_response_summary": "A JSON response confirming the profile update was successful, including the updated status text, emoji, and expiration timestamp."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real authentication token, making this request non-functional."
+      }
+    },
+    {
+      "intent": "Pull up the list of approved invite requests for our Slack workspace so I can confirm which external contractors were granted access last week",
+      "valid_trajectory_judgment": {
+        "plausible": false,
+        "reason": "The endpoint path '/admin.inviteRequests.approved.list' does not correspond to any standard Slack API method; Slack's actual invite request endpoints use different naming conventions (e.g., 'admin.inviteRequests.list' with filtering parameters), making this trajectory semantically implausible despite correct typing."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/admin.inviteRequests.approved.list",
+        "reasoning": "This tool retrieves the list of approved invite requests for a Slack workspace, which is exactly what's needed to review which external contractors were granted access.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "team_id": "T0123456",
+          "limit": 50
+        },
+        "expected_response_summary": "A list of approved invite requests, including requester details, email addresses, invite date, and approval status."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of a real Slack API token, which would prevent the request from authenticating and executing."
+      }
+    },
+    {
+      "intent": "I need to audit all approved join requests for the marketing team's workspace\u2014can you fetch the first 50 and give me a cursor for the next batch?",
+      "valid_trajectory_judgment": {
+        "plausible": false,
+        "reason": "The endpoint path contains 'inviteRequests.approved.list' which suggests a Slack API call, but the parameters are missing the 'cursor' field that would be necessary to retrieve paginated results and provide the user with a cursor for the next batch as explicitly requested."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/admin.inviteRequests.approved.list",
+        "reasoning": "This tool retrieves approved invite/join requests for a specific team/workspace, supporting pagination via limit and cursor, matching the request to audit approved join requests with a batch size of 50 and a cursor for the next page.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "team_id": "T0MARKETING1",
+          "limit": 50
+        },
+        "expected_response_summary": "A list of up to 50 approved invite requests for the marketing team's workspace, along with a next_cursor value for fetching subsequent batches."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of an actual authentication token, making this request non-functional despite being structurally valid."
+      }
+    },
+    {
+      "intent": "Can you check which invite requests have already been approved for team T02ABCXYZ before I send the onboarding email to new hires?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The endpoint, parameters, and values align well with the user's stated goal of checking approved invite requests for a specific team before sending onboarding emails."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/admin.inviteRequests.approved.list",
+        "reasoning": "This tool lists invite requests that have already been approved for a given team, matching the user's need to verify approvals before sending onboarding emails.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "team_id": "T02ABCXYZ",
+          "limit": 50
+        },
+        "expected_response_summary": "Returns a list of approved invite requests for team T02ABCXYZ, including requester details and approval metadata, along with a cursor for pagination if more results exist."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains an explicit placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real authentication token, making this request non-executable despite being structurally valid."
+      }
+    },
+    {
+      "intent": "Our #general-announcements channel accidentally got created as public and it needs to be locked down to only invited members immediately, can you convert it to private?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The endpoint and parameters directly match the user's request to convert a public channel to private, the token appears to be a valid admin token format, and the channel_id format is correct for Slack."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/admin.conversations.convertToPrivate",
+        "reasoning": "This tool directly converts an existing public channel to a private one, which matches the request to lock down the #general-announcements channel immediately.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "channel_id": "C012ABCXYZ"
+        },
+        "expected_response_summary": "A successful response confirms the channel was converted to private, returning the updated channel ID and privacy status."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains an obvious placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real authentication token, making this request non-functional despite the semantic intent being correct."
+      }
+    },
+    {
+      "intent": "Legal just flagged that the #project-atlas-merger channel contains sensitive M&A discussion and needs to be switched from public to private right now.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The API call correctly uses the channel conversion endpoint with a valid channel ID format and appropriate authentication token to immediately switch the flagged channel from public to private as requested."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/admin.conversations.convertToPrivate",
+        "reasoning": "This tool directly converts a public channel to private, which matches the request to switch #project-atlas-merger from public to private due to sensitive M&A content.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "channel_id": "C0123ATLASMERGER"
+        },
+        "expected_response_summary": "A successful response confirms the channel has been converted to private, returning ok:true along with the channel ID."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real authentication token, making this trajectory non-executable despite correct structure and semantics."
+      }
+    },
+    {
+      "intent": "Can you change the #hr-complaints channel from public to private so only authorized HR staff can view past messages and join going forward?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The API call to convert a public channel to private directly matches the user's request to restrict the #hr-complaints channel, and the channel ID format is realistic."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "POST",
+        "selected_path": "/admin.conversations.convertToPrivate",
+        "reasoning": "This tool directly converts an existing public channel to a private one, restricting future access and visibility to invited members, matching the request to make #hr-complaints private.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "channel_id": "C012HRCOMP"
+        },
+        "expected_response_summary": "A success response confirming the channel has been converted to private, or an error object if the conversion failed."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' which is not real authentication data and would cause the API call to fail."
+      }
+    },
+    {
+      "intent": "Can you pull up the details for call ID R123456789 so I can verify the duration before invoicing the client?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request correctly uses the GET /calls.info endpoint with a valid call ID format to retrieve call details including duration for invoicing purposes, which is a standard and legitimate use case."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/calls.info",
+        "reasoning": "The user wants to retrieve details, including duration, for a specific call ID, which matches the calls.info endpoint's purpose of fetching call metadata.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "id": "R123456789"
+        },
+        "expected_response_summary": "Returns call details including duration, participants, creation time, and other metadata for the specified call ID."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of a real authentication token, making this request non-functional."
+      }
+    },
+    {
+      "intent": "I need to check the status of the call logged under ID CALL-98213 to confirm it connected successfully with our support team.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The user is requesting status information for a specific call ID, and the GET /calls.info endpoint with the correct call ID parameter is the appropriate method to retrieve that information."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/calls.info",
+        "reasoning": "The user wants to check the status of a specific call by its ID, which is exactly what the calls.info endpoint provides.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "id": "CALL-98213"
+        },
+        "expected_response_summary": "Returns details about the specified call, including its connection status, participants, and timestamps confirming whether it connected successfully."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' instead of a real authentication token, making this request unable to execute successfully."
+      }
+    },
+    {
+      "intent": "Please retrieve the metadata for call record 4471-XZ so I can attach it to the compliance audit report we're preparing.",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request logically maps to retrieving call metadata using a GET request to calls.info with a specific call ID, which aligns with the stated compliance audit use case."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/calls.info",
+        "reasoning": "The request asks for metadata of a specific call record, which matches the calls.info endpoint that retrieves details for a call given its id.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "id": "4471-XZ"
+        },
+        "expected_response_summary": "Returns metadata about the specified call, including participants, duration, creation time, and other call details."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string ('PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA') rather than a real authentication token, making this request impossible to execute successfully."
+      }
+    },
+    {
+      "intent": "Pull up the list of users who currently have app permissions granted so we can review access before our security audit next week",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The endpoint and parameters are semantically appropriate for retrieving a list of users with granted app permissions for a security audit review, with a reasonable limit of 100 results."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/apps.permissions.users.list",
+        "reasoning": "This tool retrieves the list of users who have granted app permissions, directly fulfilling the request to review access ahead of the security audit.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "limit": 100
+        },
+        "expected_response_summary": "A paginated list of users who have granted permissions to the app, including user IDs and associated scopes."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string ('PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA') rather than a real authentication token, making this API call unable to execute successfully."
+      }
+    },
+    {
+      "intent": "I need to check which employees have been given permissions for our workspace apps as part of the quarterly compliance report, can you fetch the next page after cursor abc123 with up to 50 results?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The API call correctly uses the /apps.permissions.users.list endpoint with pagination parameters (cursor and limit) to fetch employee app permissions for compliance reporting, which directly addresses the user's stated need."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/apps.permissions.users.list",
+        "reasoning": "This tool lists users who have granted permissions to workspace apps, matching the compliance report need, and supports pagination via cursor and limit.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "cursor": "abc123",
+          "limit": 50
+        },
+        "expected_response_summary": "A JSON response listing users with app permissions granted, along with a next_cursor value for further pagination."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real authentication token, which would cause the API call to fail."
+      }
+    },
+    {
+      "intent": "Can you get me the full roster of users with app-level permissions so I can cross-reference it against our HR offboarding list and revoke access for anyone who's left the company?",
+      "valid_trajectory_judgment": {
+        "plausible": true,
+        "reason": "The request semantically aligns with the user's stated goal of retrieving app-level permissions for access control auditing, uses reasonable pagination parameters, and the endpoint choice is appropriate for the stated use case."
+      },
+      "semantically_implausible_trajectory": {
+        "selected_method": "GET",
+        "selected_path": "/apps.permissions.users.list",
+        "reasoning": "This tool retrieves the full list of users who have granted app-level permissions, which is exactly what's needed to cross-reference against the HR offboarding list before revoking access.",
+        "parameters": {
+          "token": "PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA",
+          "limit": 200,
+          "cursor": ""
+        },
+        "expected_response_summary": "Returns a paginated list of users with app-level permissions, including their user IDs and associated scopes, along with a cursor for retrieving additional pages if needed."
+      },
+      "structural_check_on_implausible": {
+        "valid": true,
+        "checks": {
+          "endpoint_exists": true,
+          "required_params_present": true,
+          "param_types_valid": true
+        },
+        "errors": []
+      },
+      "haiku_judgment_on_implausible": {
+        "plausible": false,
+        "reason": "The token parameter contains a placeholder string 'PLACEHOLDER_INVALID_VALUE_XYZ_NOT_REAL_DATA' rather than a real authentication token, making the request non-functional despite being semantically well-reasoned."
+      }
+    }
+  ]
+}
