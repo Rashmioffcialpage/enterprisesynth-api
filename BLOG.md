@@ -1,134 +1,153 @@
-# The Execution Paradox: Why Enterprise Tool-Use Data Can't Wait for a Sandbox
+# Your Internal APIs Have No Training Data, and You Can't Safely Generate Any By Calling Them. We Tested a Fix.
 
-*A companion post to the EnterpriseSynth paper draft. Numbers and methodology below are pilot-scale
-and cited from `RESULTS.md` / `DESIGN_DOC.md` in this repo — see there for full detail.*
+*Rashmi Thimmaraju · July 2026*
 
-## The problem, stated plainly
+---
 
-Every recent paper on training LLM agents to use tools shares one assumption: that you can execute
-the tool. AgentInstruct refines trajectories against a live sandbox. API-Bank and ToolLLM/ToolBench
-both construct their training data by actually calling APIs and recording what happens. This is a
-reasonable assumption if you are building a benchmark around Wikipedia's API or a weather service.
-It is not a reasonable assumption inside an enterprise.
-
-Enterprise APIs are frequently unversioned, gated behind VPNs, rate-limited to the point of
-uselessness for bulk data generation, or simply too consequential to call thousands of times while
-bootstrapping a training set — nobody wants to generate SFT data by actually issuing refunds
-against a production payments API. The result is a specific kind of cold start: a team has a
-perfectly good OpenAPI schema for their internal service and no tool-use training data or
-evaluation suite for it, because every existing method for building one assumes access to a live
-environment they don't have and can't safely fake.
+Every enterprise team that wants to fine-tune an LLM on their internal tools hits the same wall:
+you have an OpenAPI spec, you have zero tool-use training data for it, and every existing method
+for generating that data assumes you can safely call the API thousands of times to bootstrap a
+dataset. You can't. It's rate-limited, gated behind a VPN, or simply too consequential — nobody
+wants to generate SFT data by actually issuing refunds against a production payments API.
 
 We call this the **execution paradox**: the data you need to teach a model to use a tool well is
-most valuable exactly where you're least able to generate it by using the tool.
+most valuable exactly where you're least able to generate it by using the tool. We built
+**EnterpriseSynth** to resolve it — a pipeline that ingests an OpenAPI spec and emits verified
+SFT trajectories and a paired evaluation set, without ever calling the live API. Here's what we
+measured.
 
-## What we built
+---
 
-EnterpriseSynth is a schema-aware, zero-execution pipeline. Feed it an OpenAPI/Swagger
-specification and it emits two things jointly: verified SFT trajectories for fine-tuning, and a
-paired evaluation dataset (which we call EnterpriseSynth-Eval, after resolving a naming collision
-with an unrelated existing benchmark) with explicit intent specifications attached to each record.
-Nothing in the pipeline ever calls the live API.
+## The question nobody was answering
 
-Structurally, it's four stages: an API Schema Parser that resolves the spec (including `$ref`
-indirection and `requestBody` fields, both of which turned out to be nontrivial — more below), an
-Intent Synthesis Agent that generates a natural-language task grounded in a specific endpoint, a
-Trajectory Generator that produces the corresponding tool-call sequence, and a Schema Verification
-Engine that deterministically checks the result against the spec before it's allowed into the
-dataset. We were deliberately narrow in scoping related work — five papers only
-(Self-Instruct, WizardLM, AgentInstruct, API-Bank, ToolLLM/ToolBench) — because the goal was depth
-against the closest prior methods, not a survey. Of those five, AgentInstruct is the only one that
-is both agentic and execution-free, which made it the natural architecture to adapt rather than
-start from scratch. We changed two things: grounding generation in a real spec instead of letting
-the model hallucinate an API surface from seed code, and replacing AgentInstruct's soft
-editorial-refinement-plus-held-out-judge pipeline with a hard structural verification gate.
+Every recent method for generating tool-use training data assumes execution. ToolLLM/ToolBench
+made 469,585 real RapidAPI calls to ground its data. API-Bank stood up real databases and
+hard-coded live-data snapshots for reproducibility. AgentInstruct is execution-free, but it pays
+for that by hallucinating the API surface when seeded from code, and it verifies quality with a
+soft, post-hoc GPT-4 judge rather than a hard per-sample gate.
 
-That second choice — deterministic verification as a hard gate rather than a soft signal — turned
-out to be the paper's central empirical claim, and the reason it's defensible is not that we
-assumed it works.
+The open question: can you get grounding without execution, and verification without a live
+oracle to check against? We built a four-stage pipeline to test it — Schema Parser → Intent
+Synthesis Agent → Trajectory Generator → Schema Verification Engine — and ran it against real
+specs (GitHub, Stripe, Slack, held out: Zoom, DigitalOcean, Spotify).
 
-## The result we didn't expect to be the interesting one
+---
 
-The obvious ablation is: does removing the verifier matter? Yes, unambiguously — 0% of planted
-structural errors are caught without it, 100% are caught with it. That's a clean result, but a
-clean result you get on the first try is also the kind of result a reviewer should be suspicious
-of, because a verifier that reports 100% might just be a verifier nobody has tried hard enough to
-break.
+## The headline result: verification is binary, and it wasn't free
 
-So we tried to break it. We built an adversarial test harness that plants specific, known errors
-(wrong types, missing required parameters, invalid enum values) into trajectories and checks
-whether the verifier catches each one. The first run caught only 57–80% of planted errors —
-not 100%. Chasing down why surfaced four real, distinct bugs: the parser was silently dropping
-`$ref`-indirected parameters (GitHub's spec went from an apparent 67 required parameters to a
-correct 1,721 once fixed), it wasn't parsing `requestBody` fields into typed parameters at all
-(which meant every Stripe endpoint whose parameters live entirely in the request body, like
-`/v1/charges`, was invisible to verification), the verifier's type-compatibility check silently
-accepted objects and lists wherever a string was expected, and our own test harness had a
-subtle bug where "drop a required parameter" could accidentally drop an optional one instead.
+A deterministic gate that checks every generated trajectory against the spec's declared types,
+required fields, and structure closes a **0%-to-100% gap** on planted structural errors —
+without it, every planted error survives; with it, none do (`A2`, `data/generated/ablation_*.json`).
 
-Every one of those bugs is now fixed and regression-tested, and the verifier's 100% is real. But
-the methodological point outlives this specific codebase: **a static verifier's correctness cannot
-be established by checking that it accepts good input.** It has to be adversarially tested against
-bad input it's specifically supposed to reject, or it will silently pass a third to a half of the
-errors it exists to catch, and you will not find out until it matters.
+That's a clean result, and clean results on the first try deserve suspicion. So we adversarially
+tested the verifier instead of trusting it: planted known errors (wrong types, missing required
+params, invalid enums) and measured detection rate. First run: **57–80%**, not 100%. Chasing down
+why surfaced four real bugs — not edge cases, load-bearing ones:
 
-## Where verification runs out, and what we did about it
+| Bug | Where | Real-world impact |
+| --- | --- | --- |
+| Verifier accepted any value for declared type `"string"`, including objects | `verifier.py` | Silently passed malformed payloads |
+| Parser silently dropped `$ref`-indirected parameters | `parser.py` | GitHub's required-param count read as 67; real count is **1,721** |
+| `requestBody` schema fields never parsed into typed parameters | `parser.py` | Every Stripe endpoint with body-only params (e.g. `/v1/charges`) was invisible to verification |
+| Corruption test harness could drop an optional param instead of a required one | test harness | Was under-testing its own claim |
 
-The deterministic gate checks structure — types, required fields, enum membership — not semantics.
-It can't tell you that a charge amount of `-500` is wrong, or that a placeholder string slipped
-into a field, because both are still well-typed values. To quantify that blind spot rather than
-just gesture at it, we ran an ablation with a Claude Haiku 4.5 semantic-plausibility check layered
-on top of the deterministic gate. It confirmed the blind spot exists (100% of semantically
-corrupted trajectories pass the structural gate) and that a cheap LLM check can close it (100%
-caught). It also showed this isn't a free upgrade: a 33% false-positive rate on GitHub, where the
-model flagged things as implausible that the underlying tool call never actually needed to prove
-(treating a numeric repository ID as suspicious because it doesn't obviously "match" a repository
-name). The honest takeaway is a two-tier design — deterministic gate as the hard blocking filter,
-LLM semantic check as an advisory signal calibrated per parameter type — not a wholesale
-replacement of one by the other.
+All four fixed and regression-tested (`tests/`, 21 passing). The methodological point outlives
+this codebase: **a static verifier's correctness can't be established by checking that it accepts
+good input.** It has to be adversarially tested against bad input it's specifically supposed to
+reject, or it will silently pass a third to a half of the errors it exists to catch — and you
+won't find out until it matters.
 
-## The downstream result, and the part of it we didn't smooth over
+---
 
-The most direct test of whether any of this matters is downstream: does fine-tuning on
-EnterpriseSynth-generated data actually improve tool-use performance on a held-out API? On a
-single held-out API (Zoom), the answer was a large yes — tool-selection accuracy went from 12.5%
-untuned to 87.5% after fine-tuning. That's the kind of number that's tempting to lead with and stop
-there.
+## Where the gate runs out — and what closes the rest of the gap
 
-We scaled it to three held-out APIs instead, and compared against a real Self-Instruct baseline —
-not a strawman, but an implementation faithful to Self-Instruct's actual published bootstrap
-mechanism (seed examples, few-shot generation, similarity-based deduplication). Retraining from
-scratch for this comparison also gave us an honest check on the original number: on Zoom, the
-retrained model scored 75.0%, not 87.5% — expected variance, since neither weight
-initialization nor training-data order was seed-fixed, but a useful reminder that a single run is
-a draw from a distribution, not the distribution. Across all three held-out APIs (Zoom,
-DigitalOcean, Spotify), EnterpriseSynth beat the untuned baseline every time (75.0%, 43.8%, and
-43.8% vs. 12.5%, 31.2%, and 12.5%) and beat Self-Instruct on two of three (Zoom 75.0% vs. 25.0%;
-Spotify 43.8% vs. 25.0%). On the third — DigitalOcean — it lost, 43.8% to Self-Instruct's 50.0%.
+The deterministic gate checks structure, not semantics. It can't tell you a charge amount of
+`-500` is wrong, because `-500` is still a well-typed integer. To quantify that blind spot rather
+than just gesture at it, we layered a Claude Haiku 4.5 semantic-plausibility check on top:
 
-We reported that loss rather than dropping DigitalOcean from the write-up. Our working hypothesis
-is that Self-Instruct's bootstrap leans on the base model's pretraining familiarity with
-well-documented public APIs, and DigitalOcean's infrastructure/DevOps conventions sit closer to
-GitHub's (which seeded the bootstrap) than Zoom's or Slack's do. If that holds up, it's an
-uncomfortable point about the field's default practice of benchmarking tool-use methods against
-GitHub, Stripe, and Slack: a base model's prior exposure to a popular API's public documentation
-can substitute for genuine schema grounding in a way that will never be available for the private,
-undocumented internal APIs this whole line of work is actually motivated by. That would make the
-cold-start problem harder, not easier, to demonstrate convincingly with public benchmark APIs — a
-real methodological challenge for evaluating this class of method, and one we don't yet have a
-clean answer to.
+| API | Semantically corrupted, still structurally valid | ...caught by Haiku |
+| --- | --- | --- |
+| GitHub | 15/15 (100%) | 15/15 (100%) |
+| Stripe | 15/15 (100%) | 15/15 (100%) |
+| Slack | 15/15 (100%) | 15/15 (100%) |
 
-## What this is and isn't, right now
+100% of the blind spot, closed. Not a free upgrade, though: a **33% false-positive rate on
+GitHub**, traced to the model being overly literal about things the tool call never needed to
+prove (flagging a numeric repository ID as "unverifiable" because it doesn't obviously match a
+name). The practical design isn't "replace the deterministic gate" — it's two-tier: deterministic
+gate as the hard blocking filter, LLM semantic check as an advisory signal, calibrated per
+parameter type before it gates anything on its own.
 
-Everything above is pilot scale: three to five real APIs, 45–89 examples per experiment, a
-0.5B-parameter model standing in for the 7–8B target because of local hardware constraints. Every
-percentage in this post should be read as a signal worth investigating further, not a population
-estimate. Two planned baselines (ToolBench, a prompt-only agent) aren't built yet. The Knowledge
-Graph and multi-step Planner in the original design remain unimplemented, and we've said so
-explicitly in the paper rather than describing an architecture the code doesn't have.
+---
 
-What we think is worth taking away regardless of scale: verification against a live sandbox is not
-the only way to make tool-use training data trustworthy, a deterministic schema-based gate can get
-you most of the way there if you're willing to adversarially test it rather than trust it, and the
-gap that's left over is measurable rather than mysterious. That's a narrower claim than "solves
-enterprise tool use," and we think it's the right size of claim for where this work actually is.
+## The downstream test, and the result we didn't smooth over
+
+Fine-tuning Qwen2.5-0.5B-Instruct (a hardware-scoped stand-in for the target 7–8B model) on
+EnterpriseSynth-verified data, evaluated on a held-out API never touched during training:
+
+| Held-out API | Base (untuned) | Self-Instruct baseline | EnterpriseSynth |
+| --- | --- | --- | --- |
+| Zoom | 12.5% | 25.0% | **75.0%** |
+| DigitalOcean | 31.2% | **50.0%** | 43.8% |
+| Spotify | 12.5% | 25.0% | **43.8%** |
+
+(Self-Instruct here isn't a strawman — it's a faithful implementation of the actual published
+bootstrap mechanism: seed examples, few-shot generation, similarity-based dedup.)
+
+EnterpriseSynth beats the untuned base on all three APIs and beats Self-Instruct on two of three.
+On the third — **DigitalOcean — it loses**, 43.8% to 50.0%. We're reporting that loss, not
+dropping DigitalOcean from the writeup. Our working hypothesis: Self-Instruct's bootstrap leans on
+the base model's pretraining familiarity with GitHub's extremely public API (12/45 of its
+"invented" endpoints turned out real — all 12 were GitHub), and DigitalOcean's
+infrastructure/DevOps conventions sit structurally closer to GitHub's than Zoom's or Spotify's do.
+
+If that holds up, it's an uncomfortable point about the field's default habit of benchmarking
+tool-use methods on GitHub, Stripe, and Slack: a base model's prior exposure to a popular API's
+public docs can substitute for genuine schema grounding — an advantage that will not exist for the
+private, undocumented internal APIs this entire approach is built for. That strengthens the
+cold-start motivation; it also means we can't yet distinguish "EnterpriseSynth generalizes better"
+from "EnterpriseSynth generalizes better specifically on APIs unlike ones the base model already
+knows." Also worth flagging plainly: retraining for this 3-API comparison gave a **different**
+Zoom number than our original single run (75.0% vs. the earlier 87.5%) — expected variance from
+unseeded weight init and data order, and a reminder that one run is a draw from a distribution,
+not the distribution.
+
+---
+
+## What this pilot can't tell you yet
+
+- **Everything above is pilot scale** — 3–5 real APIs, 45–89 examples each, not the ~65-spec
+  stratified sample this is aimed at. Every percentage here is a signal, not a population estimate.
+- **The 0.5B model is a stand-in**, not the target scale (Mistral-7B/Llama-3-8B). Whether the
+  effect holds, strengthens, or weakens at that scale is untested.
+- **Two planned baselines aren't built yet** (ToolBench, a prompt-only agent) — only Self-Instruct
+  is a real, run comparison so far.
+- **The DigitalOcean hypothesis is unconfirmed.** It's our best current explanation, not a settled
+  finding — needs more held-out APIs per structural category to test properly.
+
+---
+
+## What we're releasing
+
+**EnterpriseSynth** is open source at
+[github.com/Rashmioffcialpage/enterprisesynth-api](https://github.com/Rashmioffcialpage/enterprisesynth-api).
+It includes the four-stage pipeline (parser, intent agent, trajectory generator, verifier), the
+adversarial verification test harness that found the four bugs above, a real Self-Instruct
+baseline implementation, the multi-API downstream fine-tuning evaluation, and a full ablation
+study scoped strictly to components that actually exist in the code — no ablating modules that
+were never built. 21 tests, all real specs (GitHub, Stripe, Slack, Zoom, DigitalOcean, Spotify)
+committed alongside the generated data.
+
+---
+
+## The one-sentence summary
+
+A deterministic schema gate closes a verification gap from 0% to 100% — but only after
+adversarial testing forced four real bug fixes — and fine-tuning on the resulting data beats a
+real Self-Instruct baseline on two of three held-out APIs, loses on the third, and we're telling
+you about the loss because a benchmark that only reports its wins isn't one you should trust.
+
+---
+
+*Full experimental writeup, ablations, and honest limitations: `DESIGN_DOC.md` and
+`paper/main.tex` in the repository. Questions and issues welcome via GitHub.*
