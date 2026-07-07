@@ -3,18 +3,21 @@
 **Author**: Rashmi Thimmaraju
 **Target venues**: MLinPL 2026 (8/1) · AAAI 2027 Workshop on Enterprise AI Evaluation (7/28)
 
-> **DRAFT v0.1 (2026-07-06).** Markdown rendering of `paper/main.tex` (canonical LaTeX source, kept
-> in sync manually). Built from `DESIGN_DOC.md`.
+> **DRAFT v0.2 (2026-07-07).** Markdown rendering of `paper/main.tex` (canonical LaTeX source, kept
+> in sync manually; compiles cleanly to a 24-page PDF via `tectonic`). Built from `DESIGN_DOC.md`.
 > **Honesty markers**: Experiment 1 = measured, 3 APIs (845/446/174 ops), no execution needed.
-> Experiment 2 = measured, N=45 intents (Claude Sonnet 5, 3 APIs x 5 endpoints x 3 intents).
-> Experiment 3 = measured, N=45 trajectories, **self-consistency caveat applies** (same model
-> generated intents and tool selections — see §6.4). Experiment 4 = measured, N=45 valid + N=44
+> Experiment 2 = measured, N=45 intents (Claude Sonnet 5). Experiment 3 = measured, N=45
+> trajectories, **self-consistency caveat applies**. Experiment 4 = measured, N=45 valid + N=44
 > corrupted, **100% only after fixing 4 real bugs found by this experiment itself** (first run:
-> 57–80%). Experiment 5 = measured, N=16 held-out (Zoom), hardware-scoped substitute model
-> (Qwen2.5-0.5B, not the paper's 7–8B target) — **12.5%→87.5% tool selection is the strongest
-> result in the paper, still pilot-scale**. Ablation A1/A3/A4 = measured, N=45 each; A2 reuses
-> Experiment 4's data. No baselines (Self-Instruct/ToolBench/prompt-only) have been run yet — see
-> `REVIEW.md` for the full list of what a real reviewer would flag.
+> 57–80%); its Haiku 4.5 semantic-check ablation arm adds real value (100% catch rate on a
+> distinct error class) but has a disclosed 33% false-positive rate on GitHub. Experiment 5 =
+> measured, hardware-scoped substitute model (Qwen2.5-0.5B, not the paper's 7–8B target); the
+> single-Zoom 87.5% headline **does not generalize uniformly** — scaled to 3 held-out APIs,
+> EnterpriseSynth beats a real Self-Instruct baseline on 2/3 but loses on DigitalOcean. Ablation
+> A1/A2/A3/A4/A5 = measured; A3/A4 are honestly inconclusive. Naming: the evaluation dataset is
+> called **EnterpriseSynth-Eval** (renamed from an earlier "EnterpriseBench" to avoid a collision
+> with an unrelated benchmark). See `REVIEW.md` for the full list of what a real reviewer would
+> flag.
 
 ---
 
@@ -43,10 +46,10 @@ non-deterministic natural language intents into deterministic sequences of exter
 transactions — modeled as structured web interfaces via OpenAPI or Swagger specifications — agents
 possess the theoretical capacity to orchestrate highly complex enterprise operations.
 
-> **Figure — target architecture.** The full pipeline diagram (`enterprisesynth_pipeline_diagram.pdf`,
-> not yet produced) shows the *target* architecture, including the Knowledge Graph and Planner
-> stages that are **not implemented**. See §3.1 below for the four-stage system that Sections 6–8
-> actually measure.
+> **Figure 1.** `paper/enterprisesynth_pipeline_diagram.pdf` shows the target architecture
+> (Section 3.2) vs. traditional live pipelines, explicitly marking the Knowledge Graph and Planner
+> stages as not implemented — see Section 3.1 for the four-stage system that Sections 6–8 actually
+> measure.
 
 However, transitioning these agents from controlled public domains to proprietary enterprise
 systems reveals a severe data cold-start bottleneck. Out-of-the-box foundation models exhibit poor
@@ -111,14 +114,15 @@ ablation-study accounting of what is and is not built):
   detection of planted errors — after fixing four real bugs the testing itself surfaced (§6.6).
 - We show, on a hardware-scoped pilot, that fine-tuning a small open model on
   EnterpriseSynth-generated, verified trajectories measurably improves tool-selection accuracy on
-  a genuinely held-out API (§6.7).
+  a genuinely held-out API (§6.7) — though this effect does **not** hold uniformly once scaled to
+  more held-out APIs, reported honestly rather than cherry-picked (§6.7.1).
 - We do **not** yet claim a dependency-graph-based planning layer or a separate agentic planning
   module as delivered contributions — an API Knowledge Graph (Stage 2) and a standalone Planner
   (Stage 4) are part of the target architecture (§3) but are not implemented in the current
   system; §8's ablation study is scoped to the four stages that actually exist.
-
-*(Note: the evaluation suite's name is TBD pending the EnterpriseBench naming-collision decision —
-see `DESIGN_DOC.md`'s open items. Do not read any name choice below as finalized.)*
+- We release **EnterpriseSynth-Eval**, the jointly-emitted evaluation dataset tying each SFT trace
+  to its intent spec — named to avoid a collision with the unrelated, identically-named
+  live-sandbox benchmark of Vishwakarma et al. (2025).
 
 ## 2. Related Work
 
@@ -194,8 +198,13 @@ What is actually built and measured (§6–§8) is a **four-stage pipeline**:
 
 ```text
 OpenAPI Spec → API Schema Parser → Intent Generation Agent → Trajectory Generation Agent
-             → Schema-Aware Verification Engine → {SFT Dataset, Evaluation Dataset}
+             → Schema-Aware Verification Engine → {SFT Dataset, EnterpriseSynth-Eval}
 ```
+
+We call the jointly-emitted evaluation dataset **EnterpriseSynth-Eval** throughout this paper —
+named to avoid a collision with Vishwakarma et al.'s unrelated EnterpriseBench (arXiv:2510.27287),
+a live-sandbox enterprise agent benchmark with a different scope (simulated live task execution
+across SWE/HR/finance/admin tasks, vs. our zero-execution, schema-derived eval records).
 
 1. **API Schema Parser.** Ingests the OpenAPI/Swagger spec and extracts endpoints, parameters
    (including `$ref`-resolved and `requestBody`-derived fields, §6.2), descriptions,
@@ -287,9 +296,10 @@ Generator. The Schema Verification Engine's primary gate is deliberately *not* a
 deterministic, schema-based validation — since a non-LLM structural gate is the core
 methodological differentiator from AgentInstruct's LLM-judge verification (§2); an optional
 ablation arm layers Claude Haiku 4.5 as a cheap semantic-plausibility check on top of the
-deterministic gate. The fine-tuning target is a separate, open-weight model, since it must be
-open-weight to be fine-tuned at all (Mistral-7B/Llama-3-8B in the original plan; see §6.7 for the
-hardware-scoped substitute actually used).
+deterministic gate (implemented and measured, §6.6.1: adds real value for semantically-implausible
+values but has a real false-positive rate). The fine-tuning target is a separate, open-weight
+model, since it must be open-weight to be fine-tuned at all (Mistral-7B/Llama-3-8B in the original
+plan; see §6.7 for the hardware-scoped substitute actually used).
 
 ### 4.5 Evaluation Metrics
 
@@ -300,16 +310,16 @@ SFT (held-out eval-record pass rate, fine-tuned vs. untuned).
 ### 4.6 Implementation Details
 
 Python 3.12; Pydantic for schema modeling and verification, PyYAML for spec parsing, and the
-Anthropic SDK (Claude Sonnet 5) for the generation stages. NetworkX is listed in the project's
-dependencies for the target architecture's Knowledge Graph but is not yet used by any implemented
-code. No GPU is required for generation (API-based models); a single GPU is needed only for the
-LoRA fine-tuning step.
+Anthropic SDK (Claude Sonnet 5, Haiku 4.5) for the generation stages. NetworkX is listed in the
+project's dependencies for the target architecture's Knowledge Graph but is not yet used by any
+implemented code. No GPU is required for generation (API-based models); a single GPU is needed
+only for the LoRA fine-tuning step, and even that ran successfully on a GPU-less Apple Silicon
+machine via the MPS backend.
 
 ## 5. Experiments
 
-*(This section is largely superseded by §6 "Results and Analysis" below, which reports the same
-five experiments with final numbers. It is kept for the record of what the protocol looked like
-before execution.)*
+*(Largely superseded by §6 "Results and Analysis," which reports the same five experiments with
+final numbers. Kept for the record of what the protocol looked like before execution.)*
 
 ### 5.1 Experimental Goals
 
@@ -333,10 +343,10 @@ performance on unseen API tasks (Experiment 5)?
 ### 6.1 Overview
 
 We evaluate EnterpriseSynth on real-world OpenAPI specifications from GitHub, Stripe, and Slack
-(pipeline development and SFT training data), plus Zoom (held out exclusively for evaluation,
-never touched during training or any earlier experiment). All numbers below are measured, not
-projected; full detail, scripts, and raw data are in `DESIGN_DOC.md` §6 and the repository's
-`scripts/` and `data/generated/` directories.
+(pipeline development and SFT training data), plus Zoom, DigitalOcean, and Spotify (held out
+exclusively for evaluation). All numbers below are measured, not projected; full detail, scripts,
+and raw data are in `DESIGN_DOC.md` §6 and the repository's `scripts/` and `data/generated/`
+directories.
 
 ### 6.2 RQ1 — API Schema Understanding
 
@@ -354,12 +364,12 @@ spec-specific patches.
 
 ### 6.3 RQ2 — Intent Generation Quality
 
-5 endpoints sampled per API, 3 intents each (45 total): 100% Intent Coverage and 100% exact-string
-Intent Diversity for all three APIs (a weak proxy — semantic-similarity clustering is not yet
-implemented). Manual inspection substantiates quality beyond the aggregate metric: generated
-intents are business-scenario-specific and non-generic (e.g. locking down release tags for a
-named "payments-service" repo, rotating a named secret across specific microservices) rather than
-templated restatements of the same request.
+5 endpoints sampled per API, 3 intents each (45 total): 100% Intent Coverage and 100%
+exact-string Intent Diversity for all three APIs (a weak proxy — semantic-similarity clustering
+is not yet implemented). Manual inspection substantiates quality beyond the aggregate metric:
+generated intents are business-scenario-specific and non-generic (e.g. locking down release tags
+for a named "payments-service" repo, rotating a named secret across specific microservices) rather
+than templated restatements of the same request.
 
 ![Experiment 2 figure](paper/figures/exp2_intent_generation.png)
 
@@ -395,24 +405,63 @@ perfect, but that adversarial testing against a verifier is what actually valida
 
 ![Experiment 4 figure](paper/figures/exp4_verification_before_after.png)
 
+**Ablation arm — Claude Haiku 4.5 semantic-plausibility check (RQ3).** The deterministic verifier
+only checks structure; it has no notion of whether a parameter *value* makes business sense. For
+each of the 45 valid trajectories, we ask Haiku whether it's semantically plausible, and construct
+a corruption (negate a numeric param, or replace a string with an obvious placeholder) confirmed
+to still pass the deterministic verifier structurally, then ask the same question of the corrupted
+version:
+
+| API | Valid → plausible | Corrupted → still valid | ...caught by Haiku |
+| --- | --- | --- | --- |
+| GitHub | 10/15 (66.7%) | 15/15 (100%) | 15/15 (100%) |
+| Stripe | 15/15 (100%) | 15/15 (100%) | 15/15 (100%) |
+| Slack | 13/15 (86.7%) | 15/15 (100%) | 15/15 (100%) |
+
+100% of semantically-corrupted trajectories pass the deterministic verifier (confirming it cannot
+see this error class by construction) and 100% are caught by Haiku — genuine incremental value.
+But the semantic checker has a real false-positive rate, worst on GitHub (33%): inspecting flagged
+cases shows Haiku being overly literal (e.g. flagging correct use of repository IDs as
+"unverifiable," or expecting a parameter that doesn't exist in the spec) rather than catching real
+problems. Adds value for its target error class, but would need calibration before serving as a
+hard gate rather than an advisory signal.
+
 ### 6.6 RQ5 — Downstream Agent Performance
 
 Training set: 45 Stage-6-verified trajectories from GitHub/Stripe/Slack. Evaluation set: 16
-intents for Zoom (373 endpoints), absent from training and every prior experiment. Model:
-Qwen2.5-0.5B-Instruct, LoRA fine-tuned (a hardware-scoped substitute for the paper's eventual
-7–8B target).
+intents for Zoom (373 endpoints), absent from training and every prior experiment. Model: Qwen2.5-
+0.5B-Instruct, LoRA fine-tuned (a hardware-scoped substitute for the paper's eventual 7–8B target).
 
 | Model | Tool Success | Argument Correctness |
 | --- | --- | --- |
 | Base LLM (zero-shot) | 12.5% (2/16) | 0.0% |
+| Self-Instruct-fine-tuned | 25.0% (4/16) | 50.0% (2/4) |
 | EnterpriseSynth-fine-tuned | 87.5% (14/16) | 57.1% (8/14) |
 
-Prompt-only-agent and Self-Instruct baseline rows are not yet implemented for this pilot. The
-12.5%→87.5% jump, from 45 training examples and a 0.5B model, on a genuinely unseen API, is the
-strongest evidence for the paper's central claim so far. Argument correctness lagging behind tool
-selection is itself informative: the model learned which endpoint to call but not always the
-exact field names a new schema requires — exactly the failure mode Stage 6 verification exists to
-catch downstream.
+The 12.5%→87.5% jump, from 45 training examples and a 0.5B model, on a genuinely unseen API, is
+the strongest evidence for the paper's central claim so far, and the Self-Instruct baseline shows
+it is not simply "any fine-tuning helps" — schema-grounded, verified training data helps roughly
+3.5x more than schema-free bootstrapped data on the identical task. Argument correctness lagging
+behind tool selection is itself informative: the model learned which endpoint to call but not
+always the exact field names a new schema requires — exactly the failure mode Stage 6
+verification exists to catch downstream.
+
+**This does not hold uniformly once scaled to more held-out APIs, and we report that plainly.**
+Training each model once and evaluating against Zoom, DigitalOcean, and Spotify:
+
+| Held-out API | Base | Self-Instruct | EnterpriseSynth |
+| --- | --- | --- | --- |
+| Zoom | 12.5% | 25.0% | 75.0% |
+| DigitalOcean | 31.2% | **50.0%** | 43.8% |
+| Spotify | 12.5% | 25.0% | 43.8% |
+
+EnterpriseSynth beats Self-Instruct on Zoom (retrained: 75.0% vs. 25.0%) and Spotify (43.8% vs.
+25.0%), but **loses to it on DigitalOcean** (43.8% vs. 50.0%). The single-Zoom 87.5% figure was
+directionally correct but not fully representative of the effect size — a plausible, explicitly
+unconfirmed hypothesis is that DigitalOcean's infrastructure/DevOps-flavored REST conventions
+structurally resemble GitHub's more than Zoom's/Spotify's do, giving Self-Instruct's GitHub-heavy
+bootstrap (§6.6's finding that its "invented" endpoints were disproportionately real GitHub ones)
+an incidental transfer advantage there specifically.
 
 ![Experiment 5 figure](paper/figures/exp5_downstream_performance.png)
 
@@ -424,25 +473,27 @@ catch downstream.
 | Enterprise APIs | Limited | Limited | No | Yes |
 | Requires live execution | Yes | Yes | No | No |
 | Generates SFT data | Yes | Limited | Yes | Yes |
-| Generates eval data | Limited | Yes | No | Yes |
+| Generates evaluation data | Limited | Yes | No | Yes |
 | Schema-based verification | No | Limited | No | Yes |
 
 ### 6.8 Key Findings Summary
 
 - EnterpriseSynth extracts structured knowledge from real-world APIs at 100% measured accuracy —
-  trustworthy only because two genuine Stage 1 parsing gaps were found and fixed, not assumed from
-  the start.
+  trustworthy only because two genuine Stage 1 parsing gaps were found and fixed, not assumed
+  from the start.
 - Schema-grounded generation produces enterprise-specific, non-generic intents and correctly-scoped
   trajectories on a 45-example pilot.
 - Static, non-LLM verification catches 100% of planted errors across four corruption types — but
-  only after adversarial testing forced fixes to real bugs; the pre-fix rate was 57–80%, reported
-  rather than hidden.
+  only after adversarial testing forced fixes to real bugs; the pre-fix rate (57–80%) is reported,
+  not hidden. A Haiku-based semantic-check ablation adds real value for a distinct error class but
+  has a disclosed false-positive rate.
 - EnterpriseSynth-generated SFT data measurably improves tool-selection accuracy on a genuinely
-  unseen API (12.5%→87.5%), though exact-field-name generalization remains a real, unresolved
-  limitation.
-- All results are pilot-scale (3–4 APIs, 45–89 examples per experiment, a 0.5B substitute model).
-  Scaling to the full stratified sample, the target model size, and the remaining baselines is the
-  immediate next phase, not yet done.
+  unseen API (12.5%→87.5% on Zoom); exact-field-name generalization remains a real, unresolved
+  limitation, and the effect **does not hold uniformly** across held-out APIs (loses to
+  Self-Instruct on DigitalOcean).
+- All results are pilot-scale (3–5 APIs, 45–89 examples per experiment, a 0.5B substitute model).
+  Scaling to the full stratified sample, the target model size, and the remaining baselines is
+  the immediate next phase, not yet done.
 
 ## 7. Ablation Study
 
@@ -454,7 +505,8 @@ Three ablations from an earlier draft of this section are dropped, with reasons:
 Graph** ablation (no graph module exists), a **Planner** ablation (planning and trajectory
 generation were combined into one call from the start), and a **Response Schema Modeling**
 ablation (Stage 1 only tracks a boolean "schema present" flag, never a structured response
-schema). Four ablations are real, implemented, and run against actual data.
+schema). Five ablations are real, implemented, and run against actual data (A1–A4 here; A5, the
+Haiku semantic check, is reported under §6.5 since it's tied directly to Experiment 4).
 
 ### 7.2 A1 — Without Intent Generation
 
@@ -518,17 +570,19 @@ available; the proxy metric is reported as invalid rather than kept as a false p
 | A2: − Verification | n/a | n/a | 0% |
 | A3: + Descriptions | unchanged | unchanged (qual. diff.) | n/a |
 | A4: + Full context | unchanged | unchanged (no signal) | n/a |
+| A5: + Haiku semantic check | n/a | n/a | 100% (new error class) |
 
 ### 7.7 Why This Matters
 
 Without this study, reviewers will reasonably ask why not just prompt an LLM with the OpenAPI file
 directly. The honest, per-component answer: Intent Generation provides real grounding that
 improves diversity and correctness (A1). Verification is unambiguously necessary — the difference
-between 0% and 100% of planted errors surviving into the dataset (A2). Descriptions and full-API
-context show no effect on the metrics used so far (A3, A4), which is itself useful: it means
-current metrics are too coarse to detect what may still be a real qualitative effect, and that
-better metrics or deliberately multi-step task construction are needed before those ablations can
-be judged either way.
+between 0% and 100% of planted errors surviving into the dataset (A2). A cheap LLM semantic check
+adds real value for a distinct error class the deterministic gate can't see, but isn't free (A5).
+Descriptions and full-API context show no effect on the metrics used so far (A3, A4), which is
+itself useful: it means current metrics are too coarse to detect what may still be a real
+qualitative effect, and that better metrics or deliberately multi-step task construction are
+needed before those two ablations can be judged either way.
 
 ## References
 
@@ -546,3 +600,6 @@ be judged either way.
   Zhao, S., Hong, L., Tian, R., Xie, R., Zhou, J., Gerstein, M., Li, D., Liu, Z., & Sun, M. (2023).
   ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs.
   *arXiv:2307.16789*.
+- Vishwakarma, H., Agarwal, A., Patil, O., Devaguptapu, C., & Chandran, M. (2025). Can LLMs Help
+  You at Work? A Sandbox for Evaluating LLM Agents in Enterprise Environments.
+  *arXiv:2510.27287*. (Cited for the naming-collision disambiguation, §1.1/§3.1.)

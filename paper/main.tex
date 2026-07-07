@@ -117,9 +117,10 @@ ablation-study accounting of what is and is not built):
     standalone Planner (Stage 4) are part of the target architecture (Section~3) but are not
     implemented in the current system; Section~8's ablation study is scoped to the four stages
     that actually exist.
-    % NOTE: eval-suite name TBD pending the EnterpriseBench naming-collision decision --
-    % see DESIGN_DOC.md's open item. Do not finalize "EnterpriseBench" as the name here
-    % without resolving that first.
+    \item We release \textbf{EnterpriseSynth-Eval}, the jointly-emitted evaluation dataset tying
+    each SFT trace to its intent spec -- named to avoid a collision with the unrelated,
+    identically-named live-sandbox benchmark of Vishwakarma et
+    al.~\cite{vishwakarma2025enterprisebench}.
 \end{itemize}
 
 \section{Related Work}
@@ -194,8 +195,14 @@ What is actually built and measured (Sections 6--8) is a four-stage pipeline:
 \begin{center}
 OpenAPI Spec $\rightarrow$ API Schema Parser $\rightarrow$ Intent Generation Agent
 $\rightarrow$ Trajectory Generation Agent $\rightarrow$ Schema-Aware Verification Engine
-$\rightarrow$ \{SFT Dataset, Evaluation Dataset\}
+$\rightarrow$ \{SFT Dataset, \textbf{EnterpriseSynth-Eval}\}
 \end{center}
+
+We call the jointly-emitted evaluation dataset \textbf{EnterpriseSynth-Eval} throughout this
+paper -- named to avoid a collision with Vishwakarma et al.'s unrelated
+EnterpriseBench~\cite{vishwakarma2025enterprisebench}, a live-sandbox enterprise agent benchmark
+with a different scope (simulated live task execution across SWE/HR/finance/admin tasks, vs. our
+zero-execution, schema-derived eval records).
 
 \textbf{1. API Schema Parser.} Ingests the OpenAPI/Swagger spec and extracts endpoints,
 parameters (including \texttt{\$ref}-resolved and \texttt{requestBody}-derived fields, Section~6.2),

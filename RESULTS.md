@@ -222,4 +222,4 @@ before serving as a hard gate rather than an advisory signal.
 - Implement the remaining baselines: ToolBench, prompt-only agent.
 - Better metrics for A3/A4 (LLM-judged specificity; deliberately multi-step task construction) to
   move those two ablations from inconclusive to a real answer.
-- Resolve the EnterpriseBench naming collision (`DESIGN_DOC.md`, top of file).
+- ~~Resolve the EnterpriseBench naming collision~~ — resolved: renamed to `EnterpriseSynth-Eval`.

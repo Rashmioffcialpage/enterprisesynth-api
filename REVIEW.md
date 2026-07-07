@@ -5,6 +5,12 @@ written to surface what an actual AAAI/MLinPL reviewer would flag — not to rea
 `RESULTS.md` for the numbers referenced below and `DESIGN_DOC.md` §10 for the running open-items
 list.
 
+> **Update:** this is a point-in-time snapshot. Since it was written, items 1–3 and 5 of the
+> Recommendation section below have been resolved (Self-Instruct baseline run and scaled to 3
+> held-out APIs, §4.4/§7 Haiku ablation-arm inconsistency fixed by actually implementing it, PDF
+> compiled and visually checked, EnterpriseBench naming collision resolved). See `RESULTS.md` for
+> current numbers — the recommendations below are left as originally written for the record.
+
 ## Strengths
 
 - **The bug-discovery narrative in Experiment 4 is the paper's best asset.** Going from 57–80%
@@ -53,10 +59,9 @@ list.
    `paper/main.tex` has only been checked for balanced `\begin`/`\end` environments and existing
    figure files — never rendered. There could be layout, overfull-hbox, or reference errors that
    only a real compile would surface.
-7. **The EnterpriseBench naming collision is still unresolved** (arXiv:2510.27287 already uses
-   that name for a different benchmark). This is flagged at the top of `DESIGN_DOC.md` and in
-   the paper's contributions list as a TBD, but it needs an actual decision before submission —
-   see that file's open items.
+7. **[Resolved since this review was written]** The EnterpriseBench naming collision
+   (arXiv:2510.27287 already used that name for a different benchmark) was resolved by renaming
+   our evaluation dataset to `EnterpriseSynth-Eval`; see `DESIGN_DOC.md`'s top-of-file note.
 8. **Figures 2 and 3 (Intent Generation, Trajectory Generation) show flat 100% bars** because the
    pilot scale saturates the chosen metrics. They're accurate, but not visually informative — a
    reviewer skimming figures only will see "everything is 100%" without reading the text that

@@ -8,25 +8,18 @@ Evaluation Datasets from OpenAPI Specifications
 
 ---
 
-## ⚠ Open naming/positioning issue — resolve before drafting further
+## ✅ Naming decision (resolved)
 
-The paper draft names its evaluation suite **"EnterpriseBench."** That name is already taken:
-**arXiv:2510.27287, "Can LLMs Help You at Work? A Sandbox for Evaluating LLM Agents in
-Enterprise Environments" (Oct 2025)** ships a benchmark under the identical name (500 tasks,
-SWE/HR/finance/admin, simulated enterprise sandbox with live task execution). Reviewers at the
-AAAI Enterprise AI Evaluation workshop will very likely know this paper.
+The paper draft originally named its evaluation suite "EnterpriseBench." That name was already
+taken: **arXiv:2510.27287, "Can LLMs Help You at Work? A Sandbox for Evaluating LLM Agents in
+Enterprise Environments" (Vishwakarma et al., Oct 2025)** ships a benchmark under the identical
+name (500 tasks, SWE/HR/finance/admin, simulated enterprise sandbox with live task execution).
 
-Two options, not mutually exclusive:
-
-1. **Rename** our eval suite — candidates: `SpecEvalBench`, `EnterpriseColdBench`, `APISpecBench`.
-2. **Reframe as complementary** and cite it directly: "Vishwakarma et al.'s EnterpriseBench
-   (arXiv:2510.27287) evaluates agents against a simulated *live* enterprise sandbox; our benchmark
-   evaluates whether spec-only-generated, intent-labeled eval records correlate with performance on
-   such a sandbox, without requiring the sandbox to exist yet." This is a legitimate
-   differentiation, but the name still needs to change to avoid being read as a duplicate
-   submission.
-
-Decision needed before Section 4 of the paper is finalized.
+**Decision: rename our evaluation suite to `EnterpriseSynth-Eval`.** The framework name
+(EnterpriseSynth) is unchanged; only the eval-suite name changes. Verified no existing collision
+for `EnterpriseSynth-Eval`. Vishwakarma et al.'s EnterpriseBench remains cited in Related Work as
+a distinct, real benchmark — we are not reframing ours as complementary to it, simply avoiding the
+name clash entirely.
 
 ---
 
@@ -1005,7 +998,7 @@ other.
 
 ## 10. Open Items
 
-- Resolve the EnterpriseBench naming collision (see flag at top).
+- ~~Resolve the EnterpriseBench naming collision~~ — resolved: renamed to `EnterpriseSynth-Eval` (see flag at top).
 - Verify per-spec licensing before redistributing any derived dataset built on APIs.guru/ToolBench
   sources.
 - Confirm In-N-Out's released graph data isn't reusable outright for the Structural Graph Extractor
