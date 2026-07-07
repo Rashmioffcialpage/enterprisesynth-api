@@ -29,6 +29,7 @@ confusion. See `DESIGN_DOC.md`'s top-of-file note for the full history.
 ## Repository layout
 
 - `DESIGN_DOC.md` — full design, literature review, methodology, all measured results
+- `literature-review/` — the five-paper review, one file per paper (also condensed in `DESIGN_DOC.md` §3)
 - `paper/` — LaTeX draft (`main.tex`), bibliography, figures, related-work audit
 - `src/enterprisesynth/` — parser, intent agent, trajectory agent, verifier, ablation agents
 - `scripts/` — one script per experiment/ablation, plus figure generation
