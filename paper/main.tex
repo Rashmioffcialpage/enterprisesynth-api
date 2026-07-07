@@ -98,7 +98,7 @@ ToolBench via roughly 470,000 live RapidAPI calls during annotation), which is e
 dependency the Execution Paradox rules out for most enterprise API surfaces.
 
 \subsection{Summary of Contributions}
-Our contributions, scoped to what is actually implemented and measured (Section~8 gives the full
+Our contributions, scoped to what is actually implemented and measured (Section~7 gives the full
 ablation-study accounting of what is and is not built):
 \begin{itemize}
     \item We implement a zero-execution pipeline -- Schema Parser, Intent Synthesis Agent,
@@ -115,7 +115,7 @@ ablation-study accounting of what is and is not built):
     \item We do \textbf{not} yet claim a dependency-graph-based planning layer or a separate
     agentic planning module as delivered contributions -- an API Knowledge Graph (Stage 2) and a
     standalone Planner (Stage 4) are part of the target architecture (Section~3) but are not
-    implemented in the current system; Section~8's ablation study is scoped to the four stages
+    implemented in the current system; Section~7's ablation study is scoped to the four stages
     that actually exist.
     \item We release \textbf{EnterpriseSynth-Eval}, the jointly-emitted evaluation dataset tying
     each SFT trace to its intent spec -- named to avoid a collision with the unrelated,
@@ -234,7 +234,7 @@ dependency, sequential-workflow, and object-relation edges, so that intent gener
 could be graph-aware rather than single-endpoint-aware. Unlike
 AgentInstruct~\cite{mitra2024agentinstruct}'s \texttt{tool\_use} flow, which must synthesize or
 hypothesize an API description when seeded only from code, this graph would be derived directly
-from the real spec: there would be nothing to hallucinate. Ablation A4 (Section~8.4) is a first,
+from the real spec: there would be nothing to hallucinate. Ablation A4 (Section~7.5) is a first,
 inconclusive probe at whether the graph's benefit (multi-step workflow awareness) shows up even
 without building the graph itself, by giving the existing Intent Agent the other endpoints in the
 API as flat context.
@@ -830,6 +830,177 @@ context show no effect on the metrics used so far (A3, A4), which is itself usef
 current metrics are too coarse to detect what may still be a real qualitative effect, and that
 better metrics or deliberately multi-step task construction are needed before those ablations can
 be judged either way.
+
+\section{Case Study and Qualitative Analysis}
+
+\subsection{Purpose}
+Sections~5--7 establish that EnterpriseSynth works quantitatively and which components are
+load-bearing. This section answers a different question a metrics table cannot: \textit{what does
+EnterpriseSynth actually produce, and does it look useful for real enterprise scenarios?} Every
+example below is pulled directly, unedited, from committed pipeline output
+(\texttt{data/generated/experiment2\_intents.json}, \texttt{experiment3\_trajectories.json},
+\texttt{experiment4\_verification.json}) -- nothing here is constructed for illustration. The
+pipeline traced end-to-end:
+\begin{center}
+\small
+\begin{tabular}{c}
+Real OpenAPI Specification \\
+$\downarrow$ \\
+API Parsing (Stage 1) \\
+$\downarrow$ \\
+Intent Generation (Stage 3) \\
+$\downarrow$ \\
+Trajectory Generation (Stages 4--5) \\
+$\downarrow$ \\
+Schema Verification (Stage 6) \\
+$\downarrow$ \\
+Final SFT / Evaluation Record
+\end{tabular}
+\end{center}
+
+\subsection{Case Study 1: GitHub -- Tag Protection}
+\textbf{Parsed API knowledge} (Stage 1 output for this endpoint):
+\begin{quote}
+\small
+\texttt{POST /repos/\{owner\}/\{repo\}/tags/protection} \\
+description: ``This creates a tag protection state for a repository. This endpoint is only
+available to repository administrators.'' \\
+parameters: \texttt{owner} (path, required, string), \texttt{repo} (path, required, string),
+\texttt{pattern} (body, required, string)
+\end{quote}
+\textbf{Generated intent} (Stage 3, one of three generated for this endpoint):
+\begin{quote}
+\small ``Set up tag protection on the `payments-service' repo so that only admins can create or
+delete tags matching `v*' -- we need to prevent accidental deletion of release tags.''
+\end{quote}
+\textbf{Generated trajectory} (Stages 4--5):
+\begin{quote}
+\small
+Call \texttt{POST /repos/\{owner\}/\{repo\}/tags/protection} with
+\texttt{\{"owner": "your-org", "repo": "payments-service", "pattern": "v*"\}}. \\
+Reasoning given: ``This tool creates a tag protection rule for a repository matching a specified
+pattern, restricting tag creation/deletion to admins, which fulfills the request to protect `v*'
+tags on `payments-service'.''
+\end{quote}
+\textbf{Verification} (Stage 6): endpoint exists -- PASS; required params present -- PASS; param
+types valid -- PASS. \textbf{Trajectory status: VERIFIED.}
+
+\subsection{Case Study 2: Stripe -- Subscription Item Removal}
+\textbf{Parsed API knowledge:}
+\begin{quote}
+\small
+\texttt{DELETE /v1/subscription\_items/\{item\}} \\
+parameters: \texttt{item} (path, required, string), \texttt{clear\_usage} (body, optional,
+boolean), \texttt{proration\_behavior} (body, optional, string)
+\end{quote}
+\textbf{Generated intent:}
+\begin{quote}
+\small ``We're removing the extra seats add-on from customer cus\_9F3kLmZ8's subscription --
+please delete subscription item si\_1N4kTx2eZvKYlo2C and clear out the associated usage records
+since we don't need them for billing.''
+\end{quote}
+\textbf{Generated trajectory:}
+\begin{quote}
+\small
+Call \texttt{DELETE /v1/subscription\_items/\{item\}} with
+\texttt{\{"item": "si\_1N4kTx2eZvKYlo2C", "clear\_usage": true, "proration\_behavior":
+"create\_prorations"\}}.
+\end{quote}
+\textbf{Verification: PASS on all checks -- VERIFIED.}
+
+\textbf{An honest limitation this example surfaces directly:} the intent above evokes a business
+workflow (removing a paid add-on, reconciling usage), but the system resolves it to \textit{one}
+verified API call, not a multi-step chain of dependent calls (e.g.\ look up the customer, then the
+subscription, then delete the item). This is not a simplification for the case study -- it is what
+the implemented system actually does. Multi-step, dependency-aware trajectory generation requires
+the Knowledge Graph and Planner stages (Section~3.2), neither of which is implemented; see
+Section~10's explicit accounting. We do not show a fabricated multi-step Stripe trajectory here
+because the current pipeline cannot produce one.
+
+\subsection{Case Study 3: A Verification Failure, by Design}
+Reviewers should see the verifier reject something, not just accept everything. This corrupted
+trajectory is drawn directly from Experiment 4's adversarial test set (Section~6.5): the original,
+valid trajectory for updating access to a GitHub org secret had its \texttt{org} parameter
+corrupted from a string to an object.
+\begin{quote}
+\small
+\textbf{Original intent:} ``Update the DEPLOY\_TOKEN secret in our `acme-corp' org so it's only
+accessible by the payments-api and payments-worker repositories'' \\
+\textbf{Endpoint:} \texttt{PUT /orgs/\{org\}/actions/secrets/\{secret\_name\}/repositories} \\
+\textbf{Corrupted parameter:} \texttt{org = \{"unexpectedly": "an object"\}} (declared type:
+string) \\
+\textbf{Verifier output:} \texttt{valid: false} -- ``Parameter `org' = \{'unexpectedly': 'an
+object'\} is not compatible with declared type `string'.''
+\end{quote}
+\textbf{Trajectory status: REJECTED.} This is the same mechanism, on the same data, that produced
+Experiment 4's 44/44 detection rate (Section~6.5) -- shown here as a single concrete instance
+rather than an aggregate percentage.
+
+\subsection{Qualitative Analysis}
+
+\textbf{Finding 1: schema information is sufficient for initial task generation.} OpenAPI
+specifications provide endpoint descriptions, parameter names/types, and (where declared)
+authentication schemes -- enough for Stage 3 to generate business-scenario-specific intents
+(named companies, dollar amounts, department names; Section~6.3) without ever calling the live
+API. The GitHub and Stripe examples above were generated this way.
+
+\textbf{Finding 2: verification prevents synthetic data contamination.} Without Stage 6, every
+planted structural error in Experiment 4 survived into the dataset (0\% detection, ablation A2,
+Section~7). With it, all 44 did not (100\%). Case Study 3 shows the mechanism, not just the
+aggregate: a model trained on unverified data would have learned that passing an object where a
+string is required is acceptable GitHub API usage.
+
+\textbf{Finding 3 (reframed from a template assumption): the current system is single-step by
+design, not yet multi-step -- and we say so plainly rather than imply otherwise.} A natural claim
+for a paper like this to make is that it moves beyond ``one user request $\rightarrow$ one API
+call'' toward validated multi-step workflows. We do not make that claim, because Case Study 2 shows
+directly that the implemented system does not yet do this: every generated trajectory in
+Experiments 3--5 resolves to a single endpoint call (Section~6.4's ``Workflow Completeness: not
+applicable at this pilot scale'' is the same fact stated as a metric). The honest version of this
+finding is narrower: EnterpriseSynth's intents are often \textit{phrased} at the business-workflow
+level (Case Study 2's ``removing the extra seats add-on... and clear out the associated usage
+records'' spans a conceptual before/after state), while the \textit{trajectory} generated for them
+today is single-step. Closing that gap is exactly what the unimplemented Planner/Knowledge Graph
+stages (Section~3.2) are for.
+
+\subsection{Failure Analysis}
+
+\textbf{Category 1: sparse documentation (real, spec-level evidence; not yet directly measured as
+a pipeline failure).} The committed specs contain many endpoints with minimal descriptions --
+real examples: GitHub's \texttt{GET /gists/\{gist\_id\}} (``Get a gist''), Stripe's
+\texttt{POST /v1/refunds} (``Create a refund.''), Slack's \texttt{POST /calls.end} (``Ends a
+Call.''). None of these three happened to fall in the 15-endpoint-per-API pilot sample
+(Section~6.3), so we have not directly measured intent quality degrading on them -- this is a
+disclosed, anticipated risk rather than an observed result, and scaling to the full $\sim$65-spec
+sample (Section~10) is what would surface it either way.
+
+\textbf{Category 2: hidden business logic.} An OpenAPI spec documents an interface, not a policy.
+A loan-application endpoint's schema declares its request/response shape, not the underlying
+approval rules, eligibility criteria, or compliance checks a real implementation enforces. Nothing
+in EnterpriseSynth's four implemented stages reasons about business rules -- the Schema
+Verification Engine checks structural compatibility with the declared schema, not business
+correctness. This is a conceptual limitation inherent to schema-only generation, not something we
+have a measured failure case for, since no corruption in Experiment 4 targeted business-rule
+violations.
+
+\textbf{Category 3: complex authentication (real, measured).} GitHub's spec declares
+\textbf{zero} \texttt{securitySchemes} anywhere (Section~6.3, Experiment 1) -- its authentication
+is documented in prose, not machine-readably, a real property of that spec confirmed during
+parsing, not a parser bug. This is direct evidence that schema-declared auth can understate real
+API complexity: OAuth refresh flows, multi-user permission scoping, and dynamically-issued tokens
+are exactly the kind of auth behavior a declarative schema does not capture, and GitHub's spec is
+a concrete case of a widely-used real API where that gap is already visible.
+
+\subsection{Case Study Summary}
+\begin{center}
+\footnotesize
+\begin{tabular}{p{1.6cm}p{2cm}p{6.5cm}p{2.2cm}}
+\textbf{API} & \textbf{Domain} & \textbf{Endpoint} & \textbf{Verification} \\
+GitHub & Developer/\allowbreak software & \texttt{POST /repos/\allowbreak\{owner\}/\allowbreak\{repo\}/\allowbreak tags/\allowbreak protection} & Verified \\
+Stripe & Payments & \texttt{DELETE /v1/\allowbreak subscription\_items/\allowbreak\{item\}} & Verified \\
+GitHub (corrupted) & Developer/\allowbreak software & \texttt{PUT /orgs/\allowbreak\{org\}/\allowbreak actions/\allowbreak secrets/\allowbreak\{secret\_name\}/\allowbreak repositories} & Rejected (correctly) \\
+\end{tabular}
+\end{center}
 
 \section{Discussion}
 

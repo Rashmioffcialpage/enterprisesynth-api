@@ -102,7 +102,7 @@ Paradox rules out for most enterprise API surfaces.
 
 ### 1.1 Summary of Contributions
 
-Our contributions, scoped to what is actually implemented and measured (§8 gives the full
+Our contributions, scoped to what is actually implemented and measured (§7 gives the full
 ablation-study accounting of what is and is not built):
 
 - We implement a zero-execution pipeline — Schema Parser, Intent Synthesis Agent, Trajectory
@@ -119,7 +119,7 @@ ablation-study accounting of what is and is not built):
 - We do **not** yet claim a dependency-graph-based planning layer or a separate agentic planning
   module as delivered contributions — an API Knowledge Graph (Stage 2) and a standalone Planner
   (Stage 4) are part of the target architecture (§3) but are not implemented in the current
-  system; §8's ablation study is scoped to the four stages that actually exist.
+  system; §7's ablation study is scoped to the four stages that actually exist.
 - We release **EnterpriseSynth-Eval**, the jointly-emitted evaluation dataset tying each SFT trace
   to its intent spec — named to avoid a collision with the unrelated, identically-named
   live-sandbox benchmark of Vishwakarma et al. (2025).
@@ -194,7 +194,7 @@ API documentation alone.
 
 ### 3.1 Implemented System
 
-What is actually built and measured (§6–§8) is a **four-stage pipeline**:
+What is actually built and measured (§6–§7) is a **four-stage pipeline**:
 
 ```text
 OpenAPI Spec → API Schema Parser → Intent Generation Agent → Trajectory Generation Agent
@@ -225,14 +225,14 @@ across SWE/HR/finance/admin tasks, vs. our zero-execution, schema-derived eval r
 ### 3.2 Target Architecture
 
 The eventual design extends the implemented system with two stages that **do not exist in the
-current codebase** and are not part of any claim in §6–§8:
+current codebase** and are not part of any claim in §6–§7:
 
 **API Knowledge Graph Builder** (not implemented) — would construct a directed graph
 𝒢 = (𝒱, ℰ) with endpoints, objects, and parameters as nodes, and dependency, sequential-workflow,
 and object-relation edges, so that intent generation and planning could be graph-aware rather than
 single-endpoint-aware. Unlike AgentInstruct's `tool_use` flow, which must synthesize or
 hypothesize an API description when seeded only from code, this graph would be derived directly
-from the real spec: there would be nothing to hallucinate. Ablation A4 (§8.4) is a first,
+from the real spec: there would be nothing to hallucinate. Ablation A4 (§7.5) is a first,
 inconclusive probe at whether the graph's benefit (multi-step workflow awareness) shows up even
 without building the graph itself, by giving the existing Intent Agent the other endpoints in the
 API as flat context.
@@ -601,9 +601,178 @@ itself useful: it means current metrics are too coarse to detect what may still 
 qualitative effect, and that better metrics or deliberately multi-step task construction are
 needed before those two ablations can be judged either way.
 
-## 8. Discussion
+## 8. Case Study and Qualitative Analysis
 
-### 8.1 What Actually Works, and Why
+### 8.1 Purpose
+
+Sections 5–7 establish that EnterpriseSynth works quantitatively and which components are
+load-bearing. This section answers a different question a metrics table cannot: *what does
+EnterpriseSynth actually produce, and does it look useful for real enterprise scenarios?* Every
+example below is pulled directly, unedited, from committed pipeline output
+(`data/generated/experiment2_intents.json`, `experiment3_trajectories.json`,
+`experiment4_verification.json`) — nothing here is constructed for illustration. The pipeline
+traced end-to-end:
+
+```text
+Real OpenAPI Specification
+        |
+        v
+API Parsing (Stage 1)
+        |
+        v
+Intent Generation (Stage 3)
+        |
+        v
+Trajectory Generation (Stages 4-5)
+        |
+        v
+Schema Verification (Stage 6)
+        |
+        v
+Final SFT / Evaluation Record
+```
+
+### 8.2 Case Study 1: GitHub — Tag Protection
+
+**Parsed API knowledge** (Stage 1 output for this endpoint):
+
+```text
+POST /repos/{owner}/{repo}/tags/protection
+description: "This creates a tag protection state for a repository. This endpoint is only
+available to repository administrators."
+parameters: owner (path, required, string), repo (path, required, string),
+pattern (body, required, string)
+```
+
+**Generated intent** (Stage 3, one of three generated for this endpoint):
+
+> "Set up tag protection on the 'payments-service' repo so that only admins can create or delete
+> tags matching 'v\*' — we need to prevent accidental deletion of release tags."
+
+**Generated trajectory** (Stages 4–5):
+
+> Call `POST /repos/{owner}/{repo}/tags/protection` with `{"owner": "your-org", "repo":
+> "payments-service", "pattern": "v*"}`. Reasoning given: "This tool creates a tag protection rule
+> for a repository matching a specified pattern, restricting tag creation/deletion to admins,
+> which fulfills the request to protect 'v\*' tags on 'payments-service'."
+
+**Verification** (Stage 6): endpoint exists — PASS; required params present — PASS; param types
+valid — PASS. **Trajectory status: VERIFIED.**
+
+### 8.3 Case Study 2: Stripe — Subscription Item Removal
+
+**Parsed API knowledge:**
+
+```text
+DELETE /v1/subscription_items/{item}
+parameters: item (path, required, string), clear_usage (body, optional, boolean),
+proration_behavior (body, optional, string)
+```
+
+**Generated intent:**
+
+> "We're removing the extra seats add-on from customer cus_9F3kLmZ8's subscription — please delete
+> subscription item si_1N4kTx2eZvKYlo2C and clear out the associated usage records since we don't
+> need them for billing."
+
+**Generated trajectory:**
+
+> Call `DELETE /v1/subscription_items/{item}` with `{"item": "si_1N4kTx2eZvKYlo2C",
+> "clear_usage": true, "proration_behavior": "create_prorations"}`.
+
+**Verification: PASS on all checks — VERIFIED.**
+
+**An honest limitation this example surfaces directly:** the intent above evokes a business
+workflow (removing a paid add-on, reconciling usage), but the system resolves it to *one* verified
+API call, not a multi-step chain of dependent calls (e.g. look up the customer, then the
+subscription, then delete the item). This is not a simplification for the case study — it is what
+the implemented system actually does. Multi-step, dependency-aware trajectory generation requires
+the Knowledge Graph and Planner stages (§3.2), neither of which is implemented; see §10's explicit
+accounting. We do not show a fabricated multi-step Stripe trajectory here because the current
+pipeline cannot produce one.
+
+### 8.4 Case Study 3: A Verification Failure, by Design
+
+Reviewers should see the verifier reject something, not just accept everything. This corrupted
+trajectory is drawn directly from Experiment 4's adversarial test set (§6.5): the original, valid
+trajectory for updating access to a GitHub org secret had its `org` parameter corrupted from a
+string to an object.
+
+> **Original intent:** "Update the DEPLOY_TOKEN secret in our 'acme-corp' org so it's only
+> accessible by the payments-api and payments-worker repositories"
+> **Endpoint:** `PUT /orgs/{org}/actions/secrets/{secret_name}/repositories`
+> **Corrupted parameter:** `org = {"unexpectedly": "an object"}` (declared type: string)
+> **Verifier output:** `valid: false` — "Parameter 'org' = {'unexpectedly': 'an object'} is not
+> compatible with declared type 'string'."
+
+**Trajectory status: REJECTED.** This is the same mechanism, on the same data, that produced
+Experiment 4's 44/44 detection rate (§6.5) — shown here as a single concrete instance rather than
+an aggregate percentage.
+
+### 8.5 Qualitative Analysis
+
+**Finding 1: schema information is sufficient for initial task generation.** OpenAPI
+specifications provide endpoint descriptions, parameter names/types, and (where declared)
+authentication schemes — enough for Stage 3 to generate business-scenario-specific intents (named
+companies, dollar amounts, department names; §6.3) without ever calling the live API. The GitHub
+and Stripe examples above were generated this way.
+
+**Finding 2: verification prevents synthetic data contamination.** Without Stage 6, every planted
+structural error in Experiment 4 survived into the dataset (0% detection, ablation A2, §7). With
+it, all 44 did not (100%). Case Study 3 shows the mechanism, not just the aggregate: a model
+trained on unverified data would have learned that passing an object where a string is required is
+acceptable GitHub API usage.
+
+**Finding 3 (reframed from a template assumption): the current system is single-step by design,
+not yet multi-step — and we say so plainly rather than imply otherwise.** A natural claim for a
+paper like this to make is that it moves beyond "one user request → one API call" toward validated
+multi-step workflows. We do not make that claim, because Case Study 2 shows directly that the
+implemented system does not yet do this: every generated trajectory in Experiments 3–5 resolves to
+a single endpoint call (§6.4's "Workflow Completeness: not applicable at this pilot scale" is the
+same fact stated as a metric). The honest version of this finding is narrower: EnterpriseSynth's
+intents are often *phrased* at the business-workflow level (Case Study 2's "removing the extra
+seats add-on... and clear out the associated usage records" spans a conceptual before/after
+state), while the *trajectory* generated for them today is single-step. Closing that gap is exactly
+what the unimplemented Planner/Knowledge Graph stages (§3.2) are for.
+
+### 8.6 Failure Analysis
+
+**Category 1: sparse documentation (real, spec-level evidence; not yet directly measured as a
+pipeline failure).** The committed specs contain many endpoints with minimal descriptions — real
+examples: GitHub's `GET /gists/{gist_id}` ("Get a gist"), Stripe's `POST /v1/refunds` ("Create a
+refund."), Slack's `POST /calls.end` ("Ends a Call."). None of these three happened to fall in the
+15-endpoint-per-API pilot sample (§6.3), so we have not directly measured intent quality degrading
+on them — this is a disclosed, anticipated risk rather than an observed result, and scaling to the
+full ~65-spec sample (§10) is what would surface it either way.
+
+**Category 2: hidden business logic.** An OpenAPI spec documents an interface, not a policy. A
+loan-application endpoint's schema declares its request/response shape, not the underlying
+approval rules, eligibility criteria, or compliance checks a real implementation enforces. Nothing
+in EnterpriseSynth's four implemented stages reasons about business rules — the Schema
+Verification Engine checks structural compatibility with the declared schema, not business
+correctness. This is a conceptual limitation inherent to schema-only generation, not something we
+have a measured failure case for, since no corruption in Experiment 4 targeted business-rule
+violations.
+
+**Category 3: complex authentication (real, measured).** GitHub's spec declares **zero**
+`securitySchemes` anywhere (§6.3, Experiment 1) — its authentication is documented in prose, not
+machine-readably, a real property of that spec confirmed during parsing, not a parser bug. This is
+direct evidence that schema-declared auth can understate real API complexity: OAuth refresh flows,
+multi-user permission scoping, and dynamically-issued tokens are exactly the kind of auth behavior
+a declarative schema does not capture, and GitHub's spec is a concrete case of a widely-used real
+API where that gap is already visible.
+
+### 8.7 Case Study Summary
+
+| API | Domain | Endpoint | Verification |
+| --- | --- | --- | --- |
+| GitHub | Developer/software | `POST .../tags/protection` | Verified |
+| Stripe | Payments | `DELETE .../subscription_items/{item}` | Verified |
+| GitHub (corrupted) | Developer/software | `PUT .../secrets/{secret_name}/repositories` | Rejected (correctly) |
+
+## 9. Discussion
+
+### 9.1 What Actually Works, and Why
 
 Two results in this paper are load-bearing, not decorative. First, Schema Verification (Stage 4)
 is unambiguously necessary: A2 shows a binary 0%-vs-100% gap between no verification and ours —

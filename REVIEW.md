@@ -2,7 +2,7 @@
 
 A mock-reviewer pass on the current state of the paper (`PAPER.md`/`paper/main.tex`) and repo,
 written to surface what an actual AAAI/MLinPL reviewer would flag — not to reassure. See
-`RESULTS.md` for the numbers referenced below and `DESIGN_DOC.md` §13 for the running open-items
+`RESULTS.md` for the numbers referenced below and `DESIGN_DOC.md` §14 for the running open-items
 list.
 
 > **Update:** this is a point-in-time snapshot. Since it was written, all five items of the

@@ -1000,9 +1000,180 @@ other.
 
 ---
 
-## 9. Discussion
+## 9. Case Study and Qualitative Analysis
 
-### 9.1 What Actually Works, and Why
+### 9.1 Purpose
+
+Sections 6–8 establish that EnterpriseSynth works quantitatively and which components are
+load-bearing. This section answers a different question a metrics table cannot: *what does
+EnterpriseSynth actually produce, and does it look useful for real enterprise scenarios?* Every
+example below is pulled directly, unedited, from committed pipeline output
+(`data/generated/experiment2_intents.json`, `experiment3_trajectories.json`,
+`experiment4_verification.json`) — nothing here is constructed for illustration. The pipeline
+traced end-to-end:
+
+```text
+Real OpenAPI Specification
+        |
+        v
+API Parsing (Stage 1)
+        |
+        v
+Intent Generation (Stage 3)
+        |
+        v
+Trajectory Generation (Stages 4-5)
+        |
+        v
+Schema Verification (Stage 6)
+        |
+        v
+Final SFT / Evaluation Record
+```
+
+### 9.2 Case Study 1: GitHub — Tag Protection
+
+**Parsed API knowledge** (Stage 1 output for this endpoint):
+
+```text
+POST /repos/{owner}/{repo}/tags/protection
+description: "This creates a tag protection state for a repository. This endpoint is only
+available to repository administrators."
+parameters: owner (path, required, string), repo (path, required, string),
+pattern (body, required, string)
+```
+
+**Generated intent** (Stage 3, one of three generated for this endpoint):
+
+> "Set up tag protection on the 'payments-service' repo so that only admins can create or delete
+> tags matching 'v\*' — we need to prevent accidental deletion of release tags."
+
+**Generated trajectory** (Stages 4–5):
+
+> Call `POST /repos/{owner}/{repo}/tags/protection` with `{"owner": "your-org", "repo":
+> "payments-service", "pattern": "v*"}`. Reasoning given: "This tool creates a tag protection rule
+> for a repository matching a specified pattern, restricting tag creation/deletion to admins,
+> which fulfills the request to protect 'v\*' tags on 'payments-service'."
+
+**Verification** (Stage 6): endpoint exists — PASS; required params present — PASS; param types
+valid — PASS. **Trajectory status: VERIFIED.**
+
+### 9.3 Case Study 2: Stripe — Subscription Item Removal
+
+**Parsed API knowledge:**
+
+```text
+DELETE /v1/subscription_items/{item}
+parameters: item (path, required, string), clear_usage (body, optional, boolean),
+proration_behavior (body, optional, string)
+```
+
+**Generated intent:**
+
+> "We're removing the extra seats add-on from customer cus_9F3kLmZ8's subscription — please delete
+> subscription item si_1N4kTx2eZvKYlo2C and clear out the associated usage records since we don't
+> need them for billing."
+
+**Generated trajectory:**
+
+> Call `DELETE /v1/subscription_items/{item}` with `{"item": "si_1N4kTx2eZvKYlo2C",
+> "clear_usage": true, "proration_behavior": "create_prorations"}`.
+
+**Verification: PASS on all checks — VERIFIED.**
+
+**An honest limitation this example surfaces directly:** the intent above evokes a business
+workflow (removing a paid add-on, reconciling usage), but the system resolves it to *one* verified
+API call, not a multi-step chain of dependent calls (e.g. look up the customer, then the
+subscription, then delete the item). This is not a simplification for the case study — it is what
+the implemented system actually does. Multi-step, dependency-aware trajectory generation requires
+the Knowledge Graph and Planner stages (§4), neither of which is implemented; see §11's explicit
+accounting. We do not show a fabricated multi-step Stripe trajectory here because the current
+pipeline cannot produce one.
+
+### 9.4 Case Study 3: A Verification Failure, by Design
+
+Reviewers should see the verifier reject something, not just accept everything. This corrupted
+trajectory is drawn directly from Experiment 4's adversarial test set (§7.5): the original, valid
+trajectory for updating access to a GitHub org secret had its `org` parameter corrupted from a
+string to an object.
+
+> **Original intent:** "Update the DEPLOY_TOKEN secret in our 'acme-corp' org so it's only
+> accessible by the payments-api and payments-worker repositories"
+> **Endpoint:** `PUT /orgs/{org}/actions/secrets/{secret_name}/repositories`
+> **Corrupted parameter:** `org = {"unexpectedly": "an object"}` (declared type: string)
+> **Verifier output:** `valid: false` — "Parameter 'org' = {'unexpectedly': 'an object'} is not
+> compatible with declared type 'string'."
+
+**Trajectory status: REJECTED.** This is the same mechanism, on the same data, that produced
+Experiment 4's 44/44 detection rate (§7.5) — shown here as a single concrete instance rather than
+an aggregate percentage.
+
+### 9.5 Qualitative Analysis
+
+**Finding 1: schema information is sufficient for initial task generation.** OpenAPI
+specifications provide endpoint descriptions, parameter names/types, and (where declared)
+authentication schemes — enough for Stage 3 to generate business-scenario-specific intents (named
+companies, dollar amounts, department names; §7.3) without ever calling the live API. The GitHub
+and Stripe examples above were generated this way.
+
+**Finding 2: verification prevents synthetic data contamination.** Without Stage 6, every planted
+structural error in Experiment 4 survived into the dataset (0% detection, ablation A2, §8). With
+it, all 44 did not (100%). Case Study 3 shows the mechanism, not just the aggregate: a model
+trained on unverified data would have learned that passing an object where a string is required is
+acceptable GitHub API usage.
+
+**Finding 3 (reframed from a template assumption): the current system is single-step by design,
+not yet multi-step — and we say so plainly rather than imply otherwise.** A natural claim for a
+paper like this to make is that it moves beyond "one user request → one API call" toward validated
+multi-step workflows. We do not make that claim, because Case Study 2 shows directly that the
+implemented system does not yet do this: every generated trajectory in Experiments 3–5 resolves to
+a single endpoint call (§7.4's "Workflow Completeness: not applicable at this pilot scale" is the
+same fact stated as a metric). The honest version of this finding is narrower: EnterpriseSynth's
+intents are often *phrased* at the business-workflow level (Case Study 2's "removing the extra
+seats add-on... and clear out the associated usage records" spans a conceptual before/after
+state), while the *trajectory* generated for them today is single-step. Closing that gap is exactly
+what the unimplemented Planner/Knowledge Graph stages (§4) are for.
+
+### 9.6 Failure Analysis
+
+**Category 1: sparse documentation (real, spec-level evidence; not yet directly measured as a
+pipeline failure).** The committed specs contain many endpoints with minimal descriptions — real
+examples: GitHub's `GET /gists/{gist_id}` ("Get a gist"), Stripe's `POST /v1/refunds` ("Create a
+refund."), Slack's `POST /calls.end` ("Ends a Call."). None of these three happened to fall in the
+15-endpoint-per-API pilot sample (§7.3), so we have not directly measured intent quality degrading
+on them — this is a disclosed, anticipated risk rather than an observed result, and scaling to the
+full ~65-spec sample (§11) is what would surface it either way.
+
+**Category 2: hidden business logic.** An OpenAPI spec documents an interface, not a policy. A
+loan-application endpoint's schema declares its request/response shape, not the underlying
+approval rules, eligibility criteria, or compliance checks a real implementation enforces. Nothing
+in EnterpriseSynth's four implemented stages reasons about business rules — the Schema
+Verification Engine checks structural compatibility with the declared schema, not business
+correctness. This is a conceptual limitation inherent to schema-only generation, not something we
+have a measured failure case for, since no corruption in Experiment 4 targeted business-rule
+violations.
+
+**Category 3: complex authentication (real, measured).** GitHub's spec declares **zero**
+`securitySchemes` anywhere (§7.2, Experiment 1) — its authentication is documented in prose, not
+machine-readably, a real property of that spec confirmed during parsing, not a parser bug. This is
+direct evidence that schema-declared auth can understate real API complexity: OAuth refresh flows,
+multi-user permission scoping, and dynamically-issued tokens are exactly the kind of auth behavior
+a declarative schema does not capture, and GitHub's spec is a concrete case of a widely-used real
+API where that gap is already visible.
+
+### 9.7 Case Study Summary
+
+| API | Domain | Endpoint | Verification |
+| --- | --- | --- | --- |
+| GitHub | Developer/software | `POST .../tags/protection` | Verified |
+| Stripe | Payments | `DELETE .../subscription_items/{item}` | Verified |
+| GitHub (corrupted) | Developer/software | `PUT .../secrets/{secret_name}/repositories` | Rejected (correctly) |
+
+---
+
+## 10. Discussion
+
+### 10.1 What Actually Works, and Why
 
 Two results in this paper are load-bearing, not decorative. First, Schema Verification (Stage 4)
 is unambiguously necessary: A2 shows a binary 0%-vs-100% gap between no verification and ours —
@@ -1015,7 +1186,7 @@ input — it has to be adversarially tested against bad input it is specifically
 A non-adversarial test suite would have shipped a verifier that silently passed roughly a third to
 a half of planted errors.
 
-### 9.2 Verification Has Limits by Design, and the Haiku Arm Quantifies Them
+### 10.2 Verification Has Limits by Design, and the Haiku Arm Quantifies Them
 
 The deterministic gate checks structure, not semantics — it cannot know that a negated charge
 amount or a placeholder field value is wrong, because both are still well-typed. The Haiku 4.5
@@ -1030,7 +1201,7 @@ per parameter type (e.g. restricted to amounts, dates, and other fields where "p
 well-defined) — exactly the shape ToolACE's and AgentInstruct's own dual-layer designs converge
 on, for related reasons.
 
-### 9.3 The Downstream Effect Is Real but Not Uniform, and That Is Itself a Finding
+### 10.3 The Downstream Effect Is Real but Not Uniform, and That Is Itself a Finding
 
 Experiment 5's single-Zoom result (12.5%→87.5%) was the strongest number in an earlier draft of
 this paper. Scaling to three held-out APIs changed the story without reversing it:
@@ -1050,7 +1221,7 @@ means our own pilot cannot yet distinguish "EnterpriseSynth generalizes better" 
 knows," and only a genuinely private, unpublished spec (§5.2's cold-start validation set, not yet
 built) can settle that.
 
-### 9.4 Positioning Relative to AgentInstruct
+### 10.4 Positioning Relative to AgentInstruct
 
 We adapted AgentInstruct's agentic-flow architecture rather than starting from scratch because it
 is the only reviewed method that is both agentic and execution-free. The two changes we made —
@@ -1067,7 +1238,7 @@ cost separately, which §6.6.1 shows was worth doing.
 
 ---
 
-## 10. Limitations
+## 11. Limitations
 
 1. **Pilot scale throughout.** All five experiments and five ablations run on 3–5 real APIs and
    45–89 examples each, not the full ~65-spec stratified sample specified in §5.2. Every
@@ -1108,7 +1279,7 @@ cost separately, which §6.6.1 shows was worth doing.
 
 ---
 
-## 11. Conclusion
+## 12. Conclusion
 
 We presented EnterpriseSynth, a schema-aware, zero-execution pipeline that ingests an OpenAPI
 specification and jointly emits verified SFT trajectories and a paired evaluation dataset,
@@ -1135,7 +1306,7 @@ than being assumed into it.
 
 ---
 
-## 12. Timeline
+## 13. Timeline
 
 | Date | Milestone |
 | --- | --- |
@@ -1145,7 +1316,7 @@ than being assumed into it.
 
 ---
 
-## 13. Open Items
+## 14. Open Items
 
 - ~~Resolve the EnterpriseBench naming collision~~ — resolved: renamed to `EnterpriseSynth-Eval` (see flag at top).
 - Verify per-spec licensing before redistributing any derived dataset built on APIs.guru/ToolBench
