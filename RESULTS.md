@@ -27,6 +27,12 @@ is entirely `$ref`'d shared parameters (e.g. `org`, `secret_name`) that the pars
 dropped silently. Fixed; regression-tested. GitHub's spec also declares **zero** `securitySchemes`
 anywhere (a real property of that spec, not a parser bug) — its auth is documented in prose.
 
+![Experiment 1 figure](paper/figures/exp1_schema_understanding.png)
+
+**Figure 1.** Required-parameter counts before and after the `$ref`-resolution fix. Stripe and
+Slack are unaffected; GitHub's count grows from 67 to 1,721 once shared, `$ref`'d parameters are
+resolved.
+
 ## Experiment 2 — Intent Generation Quality
 
 `scripts/run_experiment2.py` · data: `data/generated/experiment2_intents.json`
@@ -40,6 +46,12 @@ anywhere (a real property of that spec, not a parser bug) — its auth is docume
 5 endpoints sampled per API (seeded), 3 intents each. Manual inspection confirms generated intents
 are business-scenario-specific (named companies, dollar amounts, department names), not templated.
 
+![Experiment 2 figure](paper/figures/exp2_intent_generation.png)
+
+**Figure 2.** Intent Coverage and exact-string Diversity, 5 endpoints x 3 intents per API. Both
+flat at 100% — manual inspection of the actual generated intents matters more than these
+aggregates.
+
 ## Experiment 3 — Agent Trajectory Generation
 
 `scripts/run_experiment3.py` · data: `data/generated/experiment3_trajectories.json`
@@ -52,6 +64,11 @@ are business-scenario-specific (named companies, dollar amounts, department name
 
 **Caveat stated plainly:** the same model generated both the intents and the tool selections, so
 this measures self-consistency, not generalization to independently-authored intents.
+
+![Experiment 3 figure](paper/figures/exp3_trajectory_generation.png)
+
+**Figure 3.** Tool Selection Accuracy and Parameter Validity, 45 intents, 15 candidate tools each.
+Slack ranged 93.3–100% across repeated runs; see the self-consistency caveat above.
 
 ## Experiment 4 — Schema-Based Verification
 
@@ -74,6 +91,11 @@ one; (3) Stage 1 silently dropped `$ref` parameters (same bug as Experiment 1); 
 parsed `requestBody` schema fields into typed parameters at all. All four fixed and
 regression-tested.
 
+![Experiment 4 figure](paper/figures/exp4_verification_before_after.png)
+
+**Figure 4.** Invalid-case detection rate by corruption type, first run vs. final. Missing-parameter
+and wrong-type detection were the two categories that required real bug fixes to reach 100%.
+
 ## Experiment 5 — Downstream LLM Agent Evaluation ⭐
 
 `scripts/run_experiment5.py` · data: `data/generated/experiment5_results.json`
@@ -91,6 +113,11 @@ Training set: 45 Stage-6-verified trajectories (GitHub/Stripe/Slack). Held-out e
 | + LoRA on EnterpriseSynth-verified data | **87.5% (14/16)** | **57.1% (8/14)** |
 
 Training loss: 0.708 → 0.403 → 0.247 across 3 epochs (monotonic, real learning).
+
+![Experiment 5 figure](paper/figures/exp5_downstream_performance.png)
+
+**Figure 5.** Left: base vs. LoRA-fine-tuned Qwen2.5-0.5B-Instruct on the held-out Zoom eval set.
+Right: training loss across the 3 fine-tuning epochs.
 
 **The parameter-validity gap is itself a finding:** for Zoom's `PUT /users/{userId}/password`, the
 real required field is `password`; the fine-tuned model invented `new_password` and

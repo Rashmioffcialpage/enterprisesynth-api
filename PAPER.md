@@ -362,6 +362,10 @@ spec-specific patches.
 
 ![Experiment 1 figure](paper/figures/exp1_schema_understanding.png)
 
+**Figure 2.** Required-parameter counts before and after the `$ref`-resolution fix. Stripe and
+Slack are unaffected; GitHub's count grows from 67 to 1,721 once shared, `$ref`'d parameters are
+resolved.
+
 ### 6.3 RQ2 — Intent Generation Quality
 
 5 endpoints sampled per API, 3 intents each (45 total): 100% Intent Coverage and 100%
@@ -373,6 +377,10 @@ than templated restatements of the same request.
 
 ![Experiment 2 figure](paper/figures/exp2_intent_generation.png)
 
+**Figure 3.** Intent Coverage and exact-string Diversity, 5 endpoints x 3 intents per API. Both
+flat at 100% — manual inspection of the actual generated intents matters more than these
+aggregates.
+
 ### 6.4 RQ3 — Agent Trajectory Generation
 
 Tool Selection Accuracy reaches 100% for GitHub and Stripe, 93.3–100% for Slack across repeated
@@ -383,6 +391,9 @@ not yet implemented for trajectory generation. The one genuine miss observed acr
 JSON-parsing failure in our extraction code (1/45 in one run), not a wrong tool choice.
 
 ![Experiment 3 figure](paper/figures/exp3_trajectory_generation.png)
+
+**Figure 4.** Tool Selection Accuracy and Parameter Validity, 45 intents, 15 candidate tools each.
+Slack ranged 93.3–100% across repeated runs; see the self-consistency caveat above.
 
 ### 6.5 RQ4 — Verification Performance
 
@@ -404,6 +415,9 @@ non-adversarial test would never have revealed. The conclusion is not that the v
 perfect, but that adversarial testing against a verifier is what actually validates one.
 
 ![Experiment 4 figure](paper/figures/exp4_verification_before_after.png)
+
+**Figure 5.** Invalid-case detection rate by corruption type, first run vs. final. Missing-parameter
+and wrong-type detection were the two categories that required real bug fixes to reach 100%.
 
 **Ablation arm — Claude Haiku 4.5 semantic-plausibility check (RQ3).** The deterministic verifier
 only checks structure; it has no notion of whether a parameter *value* makes business sense. For
@@ -464,6 +478,9 @@ bootstrap (§6.6's finding that its "invented" endpoints were disproportionately
 an incidental transfer advantage there specifically.
 
 ![Experiment 5 figure](paper/figures/exp5_downstream_performance.png)
+
+**Figure 6.** Left: base vs. LoRA-fine-tuned Qwen2.5-0.5B-Instruct on the held-out Zoom eval set.
+Right: training loss across the 3 fine-tuning epochs.
 
 ### 6.7 Comparison With Existing Approaches
 
