@@ -269,10 +269,24 @@ This is a placeholder default pending actual budget confirmation, not a final co
 ### 5.6 Implementation Details
 
 - **Python:** 3.12.
-- **Libraries:** Pydantic (schema modeling + Stage 6 validation), NetworkX (Stage 2 knowledge
-  graph), `openapi-spec-validator`/PyYAML (Stage 1 parsing), Anthropic SDK (Stages 3–5 model
-  calls). `FastAPI` is not needed — this is an offline batch pipeline, not a served API; add it
+- **Libraries actually used:** Pydantic (schema modeling + Stage 6 validation), Anthropic SDK
+  (Stages 3–5 model calls), stdlib `json` (Stage 1 parsing — all committed specs are JSON, not
+  YAML). `FastAPI` is not needed — this is an offline batch pipeline, not a served API; add it
   only if a live-serving mode is wanted later.
+- **Libraries planned but not adopted:** an audit found four declared dependencies with zero
+  actual imports anywhere in `src/`/`scripts/` — removed from `pyproject.toml`/`requirements.txt`
+  rather than kept as unused weight, with the reason for each disclosed here:
+  - **NetworkX** — reserved for Stage 2 (knowledge graph), which is not implemented; see §4/§8.
+  - **`openapi-spec-validator`** — planned for Stage 1 to validate that an input spec is
+    well-formed OpenAPI before parsing it; Stage 1 currently assumes well-formed input and parses
+    it directly (manual dict-walking + Pydantic validation of the *extracted* fields, not the raw
+    spec's own structural correctness) — a real, disclosed gap: a malformed spec may currently
+    produce silently-wrong output rather than a clear parse error.
+  - **PyYAML** — every committed spec (`data/specs/*.json`) is JSON; no YAML-format spec has been
+    used, so nothing ever called into it.
+  - **`requests`** — no direct HTTP calls anywhere in the pipeline; the Anthropic SDK manages its
+    own HTTP internally.
+  Re-add any of these if/when the corresponding capability is actually built or needed.
 - **Hardware:** no GPU required for generation (API-based models); a single GPU (24GB+ for a
   7–8B LoRA run) is needed only for the fine-tuning step in §5.7.
 - **Runtime, trajectory counts, eval-record counts:** not yet measured — to be reported once the
