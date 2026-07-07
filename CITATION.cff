@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use EnterpriseSynth, please cite this repository using the metadata below."
+title: "EnterpriseSynth"
+type: software
+version: 0.1.0
+date-released: 2026-07-06
+abstract: >-
+  EnterpriseSynth is a schema-aware agentic framework that ingests OpenAPI/Swagger
+  specifications and synthesizes verified Supervised Fine-Tuning (SFT) trajectories and
+  evaluation records without executing any live API, targeting the enterprise cold-start
+  problem for tool-using LLM agents.
+authors:
+  - family-names: Thimmaraju
+    given-names: Rashmi
+repository-code: "https://github.com/Rashmioffcialpage/enterprisesynth-api"
+url: "https://github.com/Rashmioffcialpage/enterprisesynth-api"
+keywords:
+  - llm agents
+  - openapi
+  - tool use
+  - synthetic data generation
+  - supervised fine-tuning
+  - schema verification
