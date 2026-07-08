@@ -23,6 +23,7 @@ unsupported-claim risk this project has avoided everywhere else.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -40,7 +41,6 @@ from enterprisesynth.verifier import SchemaVerificationEngine  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "data" / "generated"
 PRIVATE_DIR = ROOT / "data" / "specs" / "private"
-TRAIN_SEED = 42
 
 
 def merged_private_schema() -> APISchema:
@@ -74,7 +74,7 @@ def build_public_eval_set() -> tuple[list[dict], APISchema]:
     return all_examples, combined_schema
 
 
-def main() -> None:
+def main(train_seed: int) -> None:
     private_eval_path = OUT_DIR / "private_coldstart_eval.json"
     if not private_eval_path.exists():
         print("Missing private_coldstart_eval.json -- run scripts/build_private_coldstart_eval.py first.")
@@ -91,7 +91,8 @@ def main() -> None:
     with open(OUT_DIR / "experiment5_sft_train.json") as f:
         enterprisesynth_train = json.load(f)
 
-    torch.manual_seed(TRAIN_SEED)
+    print(f"Training seed for this run: {train_seed}")
+    torch.manual_seed(train_seed)
     print(f"Loading {MODEL_NAME} on {DEVICE}...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     if tokenizer.pad_token is None:
@@ -120,7 +121,7 @@ def main() -> None:
     }
     print("\n=== Evaluating on PRIVATE (never-published) held-out set ===")
 
-    out_path = OUT_DIR / "private_coldstart_results.json"
+    out_path = OUT_DIR / f"private_coldstart_results_seed{train_seed}.json"
     with open(out_path, "w") as f:
         json.dump(results, f, indent=2)
 
@@ -138,4 +139,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser_cli = argparse.ArgumentParser()
+    parser_cli.add_argument(
+        "--seed", type=int, default=42, help="Training-randomness seed (LoRA init)."
+    )
+    args = parser_cli.parse_args()
+    main(train_seed=args.seed)
