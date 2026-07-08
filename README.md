@@ -42,13 +42,6 @@ single endpoint call, stated plainly throughout the paper rather than implied ot
 - MLinPL 2026 — deadline Aug 1, 2026
 - AAAI 2027 Workshop on Enterprise AI Evaluation — deadline Jul 28, 2026
 
-## Eval suite naming (resolved)
-
-The evaluation dataset EnterpriseSynth jointly emits is called **EnterpriseSynth-Eval**. An
-earlier draft informally called it "EnterpriseBench," which collided with an unrelated
-live-sandbox benchmark (arXiv:2510.27287, Vishwakarma et al., Oct 2025) — renamed to avoid
-confusion. See `DESIGN_DOC.md`'s top-of-file note for the full history.
-
 ## Repository layout
 
 - `DESIGN_DOC.md` — full design, literature review, methodology, all measured results

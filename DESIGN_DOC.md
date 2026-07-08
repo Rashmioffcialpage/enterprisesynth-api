@@ -671,6 +671,80 @@ finding — it would need more held-out APIs per domain category to actually con
 
 Full per-API detail: `data/generated/experiment5_multi_api_results.json`.
 
+### 6.7.2 Is Any Single Seed Representative? A 5-Seed Sweep
+
+The three-API table above is itself a single draw. `scripts/scale_experiment5_heldout.py` now
+accepts `--seed N` and reuses the committed held-out eval sets rather than regenerating them via
+fresh API calls each run, so a seed sweep varies only LoRA adapter weight initialization, not the
+eval questions themselves. We reran the full comparison for 5 independent seeds (42, 123, 777,
+2025, 9999).
+
+| Held-out API | Base | Self-Instruct | EnterpriseSynth |
+| --- | --- | --- | --- |
+| Zoom | 12.5 ± 0.0% | 23.7 ± 10.3% | **66.2 ± 18.0%** |
+| DigitalOcean | 31.2 ± 0.0% | 37.5 ± 21.2% | **53.7 ± 13.7%** |
+| Spotify | 12.5 ± 0.0% | 12.5 ± 7.7% | **46.3 ± 7.1%** |
+
+**Averaged over 5 seeds, EnterpriseSynth beats both the untuned base and Self-Instruct on all
+three held-out APIs, including DigitalOcean** — the API where the single original run showed a
+loss. This does not contradict the single-run finding above; it contextualizes it. DigitalOcean's
+standard deviations are genuinely large (±13.7 for EnterpriseSynth, ±21.2 for Self-Instruct,
+overlapping ranges), so individual seeds can and do still lose there — "wins on average, with real
+run-to-run variance on DigitalOcean specifically," not "always wins." Base accuracy has zero
+variance across seeds by construction. Raw data:
+`data/generated/experiment5_multi_api_results_seed{42,123,777,2025,9999}.json`; aggregation:
+`scripts/aggregate_multi_seed_scaling.py`, output `data/generated/experiment5_multi_seed_summary.json`.
+
+### 6.7.3 Private Cold-Start Validation: Never-Published Enterprise APIs
+
+Every held-out API used so far is real and extremely well-documented, plausibly present in the
+base models' pretraining data — leaving RQ4's actual cold-start claim untested in its strongest
+form. We hand-authored five never-published, synthetic enterprise API specs — CRM, HRIS,
+Procurement, Ticket Management, Asset Management (28 endpoints total, generic plausible SaaS
+shapes, not derived from any real company's documentation) — under `data/specs/private/`, and ran
+the existing pipeline against them entirely unmodified.
+
+| Eval set | Base (untuned) | EnterpriseSynth-tuned |
+| --- | --- | --- |
+| Public (Zoom/DigitalOcean/Spotify, n=48) | 18.8% | 39.6% |
+| Private (never-published, n=30) | 23.3% | **40.0%** |
+
+**The fine-tuning effect holds on APIs that cannot be in the base model's pretraining data.**
+EnterpriseSynth-tuned accuracy on the private domains (40.0%) essentially matches public held-out
+accuracy (39.6%) — the single strongest piece of evidence in the paper that the improvement
+reflects genuine schema-grounding rather than incidental pretraining familiarity with well-known
+public APIs. Base accuracy is, if anything, slightly higher on private (23.3% vs. 18.8%),
+plausibly noise from the smaller sample rather than a real effect. Still one un-seeded run on 5
+synthetic domains, not yet given the same multi-seed treatment as the public comparison.
+Implementation: `scripts/generate_private_specs.py`, `scripts/build_private_coldstart_eval.py`,
+`scripts/run_private_coldstart_eval.py`; data: `data/generated/private_coldstart_results.json`.
+
+### 6.7.4 Scaling to 15+ APIs: Six More Real, Public Held-Out APIs
+
+§5.2 targets a ~65-spec stratified sample; three held-out public APIs plus five private domains is
+a step toward that, not the full target. We fetched six more real, public OpenAPI specs from
+APIs.guru — Twilio, Notion, OpenAI, Jira, Asana, Trello — validated against the existing parser
+with zero code changes, and evaluated EnterpriseSynth (same 45-example training set) against each.
+
+| API | Base | EnterpriseSynth |
+| --- | --- | --- |
+| Twilio | 50.0% | 66.7% |
+| Notion | 0.0% | 50.0% |
+| OpenAI | 0.0% | 50.0% |
+| Jira | 33.3% | 83.3% |
+| Asana | 0.0% | 83.3% |
+| Trello | 33.3% | 100.0% |
+
+EnterpriseSynth beats the untuned base on all six. Combined with the three public and five private
+held-out APIs above, the pipeline has now touched **17 total APIs** (3 training, 9 real held-out,
+5 private held-out) — still short of the ~65-spec target, but no longer a 3–5-API pilot either.
+Real cost data as a byproduct, addressing a previously fully-open limitation: LoRA training took
+619.8 seconds (Qwen2.5-0.5B, 45 examples, 3 epochs, Apple M2 MPS backend); per-API evaluation (12
+generations each) ranged from 27.2s (Trello) to 95.1s (Twilio) — specific to this hardware-scoped
+pilot model, not extrapolated to the 7–8B target scale. Implementation:
+`scripts/build_phase3_eval.py`, `scripts/run_phase3_eval.py`; data:
+`data/generated/phase3_results.json`, `data/generated/phase3_timings.json`.
+
 ### 6.8 What Comes After Experiments
 
 Once Experiments 1–5 actually run, the remaining paper sections analyze the results — not written
