@@ -1,0 +1,223 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Internal Procurement API",
+    "version": "1.0.0"
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Internal-Api-Key"
+      }
+    }
+  },
+  "paths": {
+    "/purchase-orders": {
+      "post": {
+        "operationId": "createPurchaseOrder",
+        "description": "Create a purchase order against an approved vendor.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "vendor_id",
+                  "line_items",
+                  "total_amount"
+                ],
+                "properties": {
+                  "vendor_id": {
+                    "type": "string"
+                  },
+                  "line_items": {
+                    "type": "array"
+                  },
+                  "total_amount": {
+                    "type": "number"
+                  },
+                  "cost_center": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/purchase-orders/{po_id}/approve": {
+      "post": {
+        "operationId": "approvePurchaseOrder",
+        "description": "Approve a pending purchase order that exceeds the requester's auto-approval limit.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "po_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "approver_id"
+                ],
+                "properties": {
+                  "approver_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vendors": {
+      "post": {
+        "operationId": "registerVendor",
+        "description": "Register a new approved vendor for procurement.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "legal_name",
+                  "tax_id",
+                  "payment_terms"
+                ],
+                "properties": {
+                  "legal_name": {
+                    "type": "string"
+                  },
+                  "tax_id": {
+                    "type": "string"
+                  },
+                  "payment_terms": {
+                    "type": "string"
+                  },
+                  "contact_email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vendors/{vendor_id}": {
+      "get": {
+        "operationId": "getVendor",
+        "description": "Retrieve a vendor's compliance status, payment terms, and order history.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "vendor_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/inventory/{sku}": {
+      "get": {
+        "operationId": "getInventoryLevel",
+        "description": "Retrieve current on-hand inventory count and reorder threshold for a SKU.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/approvals/{approval_id}/escalate": {
+      "post": {
+        "operationId": "escalateApproval",
+        "description": "Escalate a stalled purchase approval to the next level in the approval chain.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "approval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

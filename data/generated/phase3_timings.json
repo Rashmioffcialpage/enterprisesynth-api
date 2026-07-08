@@ -1,0 +1,11 @@
+{
+  "training_time_s": 619.8,
+  "eval_time_s_per_api": {
+    "twilio": 95.1,
+    "notion": 42.8,
+    "openai": 60.3,
+    "jira": 46.6,
+    "asana": 30.0,
+    "trello": 27.2
+  }
+}

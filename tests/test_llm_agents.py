@@ -14,6 +14,7 @@ from enterprisesynth.ablation_agents import (
     NoIntentTrajectoryAgent,
 )
 from enterprisesynth.intent_agent import IntentSynthesisAgent
+from enterprisesynth.llm_judge import LLMJudge
 from enterprisesynth.schemas import Endpoint, Parameter
 from enterprisesynth.semantic_checker import SemanticPlausibilityChecker
 from enterprisesynth.trajectory_agent import TrajectoryGenerator
@@ -198,3 +199,70 @@ def test_semantic_checker_malformed_json_returns_none():
     checker = SemanticPlausibilityChecker(client=_FakeClient(response))
     trajectory = {"selected_method": "POST", "selected_path": "/x", "parameters": {}}
     assert checker.check("do a thing", trajectory) is None
+
+
+# --- LLMJudge (Phase 4, Solution A) ---------------------------------------------------------
+
+
+def test_llm_judge_happy_path():
+    payload = (
+        '{"intent_match": 5, "argument_correctness": 4, "missing_parameters": 5, '
+        '"reasoning_quality": 4, "primary_error": "none"}'
+    )
+    response = _FakeResponse([_FakeBlock("text", payload)])
+    judge = LLMJudge(client=_FakeClient(response))
+    result = judge.judge(
+        intent="reset the password",
+        gt_method="PUT",
+        gt_path="/users/{id}/password",
+        gt_required_params=["password"],
+        pred_method="PUT",
+        pred_path="/users/{id}/password",
+        pred_parameters={"password": "newpass123"},
+    )
+    assert result == {
+        "intent_match": 5,
+        "argument_correctness": 4,
+        "missing_parameters": 5,
+        "reasoning_quality": 4,
+        "primary_error": "none",
+    }
+
+
+def test_llm_judge_skips_leading_thinking_block():
+    response = _FakeResponse(
+        [
+            _FakeBlock("thinking", "evaluating the prediction..."),
+            _FakeBlock(
+                "text",
+                '{"intent_match": 2, "argument_correctness": 1, "missing_parameters": 1, '
+                '"reasoning_quality": 2, "primary_error": "hallucinated_parameter"}',
+            ),
+        ]
+    )
+    judge = LLMJudge(client=_FakeClient(response))
+    result = judge.judge(
+        intent="do a thing",
+        gt_method="POST",
+        gt_path="/x",
+        gt_required_params=["password"],
+        pred_method="POST",
+        pred_path="/x",
+        pred_parameters={"current_password": "oldpassword"},
+    )
+    assert result["primary_error"] == "hallucinated_parameter"
+
+
+def test_llm_judge_malformed_json_returns_none():
+    response = _FakeResponse([_FakeBlock("text", "not json")])
+    judge = LLMJudge(client=_FakeClient(response))
+    result = judge.judge(
+        intent="do a thing",
+        gt_method="GET",
+        gt_path="/x",
+        gt_required_params=[],
+        pred_method=None,
+        pred_path=None,
+        pred_parameters={},
+    )
+    assert result is None

@@ -1,0 +1,434 @@
+[
+  {
+    "intent": "Update the status property on our Q3 roadmap page to 'In Progress' and set the owner field to Maria Chen",
+    "ground_truth_method": "PATCH",
+    "ground_truth_path": "/v1/pages/{id}",
+    "candidates": [
+      {
+        "method": "PATCH",
+        "path": "/v1/pages/{id}",
+        "operation_id": "updatePageProperties"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "updateABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "retrieveABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/databases/{id}",
+        "operation_id": "retrieveADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/comments",
+        "operation_id": "retrieveComments"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{page_id}/properties/{property_id}",
+        "operation_id": "retrieveAPagePropertyItem"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "retrieveBlockChildren"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/databases/{id}",
+        "operation_id": "updateADatabase"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "deleteABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/users/{id}",
+        "operation_id": "retrieveAUser"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "appendBlockChildren"
+      },
+      {
+        "method": "POST",
+        "path": "/v1/databases/{id}/query",
+        "operation_id": "queryADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{id}",
+        "operation_id": "retrieveAPage"
+      }
+    ]
+  },
+  {
+    "intent": "Mark the vendor contract page as 'Expired' and change the renewal date field to next Friday",
+    "ground_truth_method": "PATCH",
+    "ground_truth_path": "/v1/pages/{id}",
+    "candidates": [
+      {
+        "method": "PATCH",
+        "path": "/v1/pages/{id}",
+        "operation_id": "updatePageProperties"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "updateABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "retrieveABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/databases/{id}",
+        "operation_id": "retrieveADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/comments",
+        "operation_id": "retrieveComments"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{page_id}/properties/{property_id}",
+        "operation_id": "retrieveAPagePropertyItem"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "retrieveBlockChildren"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/databases/{id}",
+        "operation_id": "updateADatabase"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "deleteABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/users/{id}",
+        "operation_id": "retrieveAUser"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "appendBlockChildren"
+      },
+      {
+        "method": "POST",
+        "path": "/v1/databases/{id}/query",
+        "operation_id": "queryADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{id}",
+        "operation_id": "retrieveAPage"
+      }
+    ]
+  },
+  {
+    "intent": "Update the paragraph text in that Notion project brief block to reflect the new Q3 launch date we agreed on in yesterday's meeting.",
+    "ground_truth_method": "PATCH",
+    "ground_truth_path": "/v1/blocks/{id}",
+    "candidates": [
+      {
+        "method": "PATCH",
+        "path": "/v1/pages/{id}",
+        "operation_id": "updatePageProperties"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "updateABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "retrieveABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/databases/{id}",
+        "operation_id": "retrieveADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/comments",
+        "operation_id": "retrieveComments"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{page_id}/properties/{property_id}",
+        "operation_id": "retrieveAPagePropertyItem"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "retrieveBlockChildren"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/databases/{id}",
+        "operation_id": "updateADatabase"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "deleteABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/users/{id}",
+        "operation_id": "retrieveAUser"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "appendBlockChildren"
+      },
+      {
+        "method": "POST",
+        "path": "/v1/databases/{id}/query",
+        "operation_id": "queryADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{id}",
+        "operation_id": "retrieveAPage"
+      }
+    ]
+  },
+  {
+    "intent": "Can you edit the block with ID 9f1a2c... in our onboarding doc so the paragraph mentions the updated IT support email address?",
+    "ground_truth_method": "PATCH",
+    "ground_truth_path": "/v1/blocks/{id}",
+    "candidates": [
+      {
+        "method": "PATCH",
+        "path": "/v1/pages/{id}",
+        "operation_id": "updatePageProperties"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "updateABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "retrieveABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/databases/{id}",
+        "operation_id": "retrieveADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/comments",
+        "operation_id": "retrieveComments"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{page_id}/properties/{property_id}",
+        "operation_id": "retrieveAPagePropertyItem"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "retrieveBlockChildren"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/databases/{id}",
+        "operation_id": "updateADatabase"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "deleteABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/users/{id}",
+        "operation_id": "retrieveAUser"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "appendBlockChildren"
+      },
+      {
+        "method": "POST",
+        "path": "/v1/databases/{id}/query",
+        "operation_id": "queryADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{id}",
+        "operation_id": "retrieveAPage"
+      }
+    ]
+  },
+  {
+    "intent": "Can you pull up the details for the block with ID 3f2a9c1e-4b6d-4e2a-9f3b-7c8d2e1a5f60 in our Notion workspace? I need to check its content before our meeting.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/v1/blocks/{id}",
+    "candidates": [
+      {
+        "method": "PATCH",
+        "path": "/v1/pages/{id}",
+        "operation_id": "updatePageProperties"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "updateABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "retrieveABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/databases/{id}",
+        "operation_id": "retrieveADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/comments",
+        "operation_id": "retrieveComments"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{page_id}/properties/{property_id}",
+        "operation_id": "retrieveAPagePropertyItem"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "retrieveBlockChildren"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/databases/{id}",
+        "operation_id": "updateADatabase"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "deleteABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/users/{id}",
+        "operation_id": "retrieveAUser"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "appendBlockChildren"
+      },
+      {
+        "method": "POST",
+        "path": "/v1/databases/{id}/query",
+        "operation_id": "queryADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{id}",
+        "operation_id": "retrieveAPage"
+      }
+    ]
+  },
+  {
+    "intent": "We're auditing our onboarding documentation page and need to retrieve the specific block object da72e5f1-9c3a-4b8e-8a1d-6f2b3c9e7a04 to verify its type and properties.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/v1/blocks/{id}",
+    "candidates": [
+      {
+        "method": "PATCH",
+        "path": "/v1/pages/{id}",
+        "operation_id": "updatePageProperties"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "updateABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "retrieveABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/databases/{id}",
+        "operation_id": "retrieveADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/comments",
+        "operation_id": "retrieveComments"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{page_id}/properties/{property_id}",
+        "operation_id": "retrieveAPagePropertyItem"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "retrieveBlockChildren"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/databases/{id}",
+        "operation_id": "updateADatabase"
+      },
+      {
+        "method": "DELETE",
+        "path": "/v1/blocks/{id}",
+        "operation_id": "deleteABlock"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/users/{id}",
+        "operation_id": "retrieveAUser"
+      },
+      {
+        "method": "PATCH",
+        "path": "/v1/blocks/{id}/children",
+        "operation_id": "appendBlockChildren"
+      },
+      {
+        "method": "POST",
+        "path": "/v1/databases/{id}/query",
+        "operation_id": "queryADatabase"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/pages/{id}",
+        "operation_id": "retrieveAPage"
+      }
+    ]
+  }
+]

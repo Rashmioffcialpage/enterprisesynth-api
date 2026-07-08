@@ -1,0 +1,584 @@
+[
+  {
+    "intent": "We merged our 'Legacy Migration' and 'Cloud Migration' project categories into one during the reorg, so please delete the old 'Legacy Migration' category with ID 10012 from Jira since it's no longer needed.",
+    "ground_truth_method": "DELETE",
+    "ground_truth_path": "/rest/api/3/projectCategory/{id}",
+    "candidates": [
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/projectCategory/{id}",
+        "operation_id": "removeProjectCategory"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field",
+        "operation_id": "createCustomField"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/meta",
+        "operation_id": "getAttachmentMeta"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/task/{taskId}",
+        "operation_id": "getTask"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/issue/properties/multi",
+        "operation_id": "bulkSetIssuePropertiesByIssue"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/group",
+        "operation_id": "getGroup"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/filter/{id}",
+        "operation_id": "deleteFilter"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field/{fieldId}/context/{contextId}/option",
+        "operation_id": "createCustomFieldOption"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/statuses",
+        "operation_id": "deleteStatusesById"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/events",
+        "operation_id": "getEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/screens",
+        "operation_id": "createScreen"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/workflowscheme/{id}/draft/default",
+        "operation_id": "updateDraftDefaultWorkflow"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/project/recent",
+        "operation_id": "getRecent"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/dashboard/{dashboardId}/items/{itemId}/properties",
+        "operation_id": "getDashboardItemPropertyKeys"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/project/{projectIdOrKey}/restore",
+        "operation_id": "restore"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/issuetypescheme/{issueTypeSchemeId}/issuetype/move",
+        "operation_id": "reorderIssueTypesInIssueTypeScheme"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/raw",
+        "operation_id": "expandAttachmentForMachines"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/human",
+        "operation_id": "expandAttachmentForHumans"
+      }
+    ]
+  },
+  {
+    "intent": "Clean up our Jira instance by removing the unused 'Client Pilot Programs' project category, ID 10047 \u2014 it was created for a POC last year that's now been fully archived.",
+    "ground_truth_method": "DELETE",
+    "ground_truth_path": "/rest/api/3/projectCategory/{id}",
+    "candidates": [
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/projectCategory/{id}",
+        "operation_id": "removeProjectCategory"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field",
+        "operation_id": "createCustomField"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/meta",
+        "operation_id": "getAttachmentMeta"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/task/{taskId}",
+        "operation_id": "getTask"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/issue/properties/multi",
+        "operation_id": "bulkSetIssuePropertiesByIssue"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/group",
+        "operation_id": "getGroup"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/filter/{id}",
+        "operation_id": "deleteFilter"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field/{fieldId}/context/{contextId}/option",
+        "operation_id": "createCustomFieldOption"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/statuses",
+        "operation_id": "deleteStatusesById"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/events",
+        "operation_id": "getEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/screens",
+        "operation_id": "createScreen"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/workflowscheme/{id}/draft/default",
+        "operation_id": "updateDraftDefaultWorkflow"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/project/recent",
+        "operation_id": "getRecent"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/dashboard/{dashboardId}/items/{itemId}/properties",
+        "operation_id": "getDashboardItemPropertyKeys"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/project/{projectIdOrKey}/restore",
+        "operation_id": "restore"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/issuetypescheme/{issueTypeSchemeId}/issuetype/move",
+        "operation_id": "reorderIssueTypesInIssueTypeScheme"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/raw",
+        "operation_id": "expandAttachmentForMachines"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/human",
+        "operation_id": "expandAttachmentForHumans"
+      }
+    ]
+  },
+  {
+    "intent": "We need to track customer escalation severity on tickets\u2014can you set up a new custom field called 'Escalation Severity' that uses a single-select dropdown so our support team can categorize issues consistently?",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/rest/api/3/field",
+    "candidates": [
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/projectCategory/{id}",
+        "operation_id": "removeProjectCategory"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field",
+        "operation_id": "createCustomField"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/meta",
+        "operation_id": "getAttachmentMeta"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/task/{taskId}",
+        "operation_id": "getTask"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/issue/properties/multi",
+        "operation_id": "bulkSetIssuePropertiesByIssue"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/group",
+        "operation_id": "getGroup"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/filter/{id}",
+        "operation_id": "deleteFilter"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field/{fieldId}/context/{contextId}/option",
+        "operation_id": "createCustomFieldOption"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/statuses",
+        "operation_id": "deleteStatusesById"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/events",
+        "operation_id": "getEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/screens",
+        "operation_id": "createScreen"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/workflowscheme/{id}/draft/default",
+        "operation_id": "updateDraftDefaultWorkflow"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/project/recent",
+        "operation_id": "getRecent"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/dashboard/{dashboardId}/items/{itemId}/properties",
+        "operation_id": "getDashboardItemPropertyKeys"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/project/{projectIdOrKey}/restore",
+        "operation_id": "restore"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/issuetypescheme/{issueTypeSchemeId}/issuetype/move",
+        "operation_id": "reorderIssueTypesInIssueTypeScheme"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/raw",
+        "operation_id": "expandAttachmentForMachines"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/human",
+        "operation_id": "expandAttachmentForHumans"
+      }
+    ]
+  },
+  {
+    "intent": "Our HR team wants a text field on employee onboarding issues to capture the new hire's start date; please create a custom field named 'Onboarding Start Date' with a date picker searcher so managers can filter by it.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/rest/api/3/field",
+    "candidates": [
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/projectCategory/{id}",
+        "operation_id": "removeProjectCategory"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field",
+        "operation_id": "createCustomField"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/meta",
+        "operation_id": "getAttachmentMeta"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/task/{taskId}",
+        "operation_id": "getTask"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/issue/properties/multi",
+        "operation_id": "bulkSetIssuePropertiesByIssue"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/group",
+        "operation_id": "getGroup"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/filter/{id}",
+        "operation_id": "deleteFilter"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field/{fieldId}/context/{contextId}/option",
+        "operation_id": "createCustomFieldOption"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/statuses",
+        "operation_id": "deleteStatusesById"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/events",
+        "operation_id": "getEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/screens",
+        "operation_id": "createScreen"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/workflowscheme/{id}/draft/default",
+        "operation_id": "updateDraftDefaultWorkflow"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/project/recent",
+        "operation_id": "getRecent"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/dashboard/{dashboardId}/items/{itemId}/properties",
+        "operation_id": "getDashboardItemPropertyKeys"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/project/{projectIdOrKey}/restore",
+        "operation_id": "restore"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/issuetypescheme/{issueTypeSchemeId}/issuetype/move",
+        "operation_id": "reorderIssueTypesInIssueTypeScheme"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/raw",
+        "operation_id": "expandAttachmentForMachines"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/human",
+        "operation_id": "expandAttachmentForHumans"
+      }
+    ]
+  },
+  {
+    "intent": "Before we build our document upload integration with Jira, can you check what file size limit is currently configured for attachments?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/rest/api/3/attachment/meta",
+    "candidates": [
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/projectCategory/{id}",
+        "operation_id": "removeProjectCategory"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field",
+        "operation_id": "createCustomField"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/meta",
+        "operation_id": "getAttachmentMeta"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/task/{taskId}",
+        "operation_id": "getTask"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/issue/properties/multi",
+        "operation_id": "bulkSetIssuePropertiesByIssue"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/group",
+        "operation_id": "getGroup"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/filter/{id}",
+        "operation_id": "deleteFilter"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field/{fieldId}/context/{contextId}/option",
+        "operation_id": "createCustomFieldOption"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/statuses",
+        "operation_id": "deleteStatusesById"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/events",
+        "operation_id": "getEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/screens",
+        "operation_id": "createScreen"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/workflowscheme/{id}/draft/default",
+        "operation_id": "updateDraftDefaultWorkflow"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/project/recent",
+        "operation_id": "getRecent"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/dashboard/{dashboardId}/items/{itemId}/properties",
+        "operation_id": "getDashboardItemPropertyKeys"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/project/{projectIdOrKey}/restore",
+        "operation_id": "restore"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/issuetypescheme/{issueTypeSchemeId}/issuetype/move",
+        "operation_id": "reorderIssueTypesInIssueTypeScheme"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/raw",
+        "operation_id": "expandAttachmentForMachines"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/human",
+        "operation_id": "expandAttachmentForHumans"
+      }
+    ]
+  },
+  {
+    "intent": "I need to confirm whether attachment uploads are enabled on our Jira instance before rolling out a policy for engineers attaching log files to tickets.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/rest/api/3/attachment/meta",
+    "candidates": [
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/projectCategory/{id}",
+        "operation_id": "removeProjectCategory"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field",
+        "operation_id": "createCustomField"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/meta",
+        "operation_id": "getAttachmentMeta"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/task/{taskId}",
+        "operation_id": "getTask"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/issue/properties/multi",
+        "operation_id": "bulkSetIssuePropertiesByIssue"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/group",
+        "operation_id": "getGroup"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/filter/{id}",
+        "operation_id": "deleteFilter"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/field/{fieldId}/context/{contextId}/option",
+        "operation_id": "createCustomFieldOption"
+      },
+      {
+        "method": "DELETE",
+        "path": "/rest/api/3/statuses",
+        "operation_id": "deleteStatusesById"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/events",
+        "operation_id": "getEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/screens",
+        "operation_id": "createScreen"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/workflowscheme/{id}/draft/default",
+        "operation_id": "updateDraftDefaultWorkflow"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/project/recent",
+        "operation_id": "getRecent"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/dashboard/{dashboardId}/items/{itemId}/properties",
+        "operation_id": "getDashboardItemPropertyKeys"
+      },
+      {
+        "method": "POST",
+        "path": "/rest/api/3/project/{projectIdOrKey}/restore",
+        "operation_id": "restore"
+      },
+      {
+        "method": "PUT",
+        "path": "/rest/api/3/issuetypescheme/{issueTypeSchemeId}/issuetype/move",
+        "operation_id": "reorderIssueTypesInIssueTypeScheme"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/raw",
+        "operation_id": "expandAttachmentForMachines"
+      },
+      {
+        "method": "GET",
+        "path": "/rest/api/3/attachment/{id}/expand/human",
+        "operation_id": "expandAttachmentForHumans"
+      }
+    ]
+  }
+]

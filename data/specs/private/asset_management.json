@@ -1,0 +1,208 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Internal Asset Management API",
+    "version": "1.0.0"
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Internal-Api-Key"
+      }
+    }
+  },
+  "paths": {
+    "/assets/register": {
+      "post": {
+        "operationId": "registerAsset",
+        "description": "Register a new physical or software asset in the inventory system.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "asset_type",
+                  "serial_number",
+                  "owner_department"
+                ],
+                "properties": {
+                  "asset_type": {
+                    "type": "string"
+                  },
+                  "serial_number": {
+                    "type": "string"
+                  },
+                  "owner_department": {
+                    "type": "string"
+                  },
+                  "purchase_date": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assets/{asset_id}/maintenance": {
+      "get": {
+        "operationId": "getMaintenanceHistory",
+        "description": "Retrieve the maintenance and repair history for a registered asset.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/assets/{asset_id}/maintenance/schedule": {
+      "post": {
+        "operationId": "scheduleMaintenanceEvent",
+        "description": "Schedule a maintenance or inspection event for an asset.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "scheduled_date",
+                  "maintenance_type"
+                ],
+                "properties": {
+                  "scheduled_date": {
+                    "type": "string"
+                  },
+                  "maintenance_type": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assets/{asset_id}/transfer": {
+      "post": {
+        "operationId": "transferAsset",
+        "description": "Transfer asset ownership from one department or employee to another.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "new_owner_department"
+                ],
+                "properties": {
+                  "new_owner_department": {
+                    "type": "string"
+                  },
+                  "new_owner_employee_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assets/{asset_id}/retire": {
+      "post": {
+        "operationId": "retireAsset",
+        "description": "Retire an asset and remove it from active inventory.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "retirement_reason"
+                ],
+                "properties": {
+                  "retirement_reason": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

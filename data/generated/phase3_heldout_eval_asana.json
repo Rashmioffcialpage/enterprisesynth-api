@@ -1,0 +1,584 @@
+[
+  {
+    "intent": "Can you pull up the list of all teams in our Acme Corp Asana workspace so I can see how many we have set up?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/workspaces/{workspace_gid}/teams",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/workspaces/{workspace_gid}/teams",
+        "operation_id": "getTeamsForWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/jobs/{job_gid}",
+        "operation_id": "getJob"
+      },
+      {
+        "method": "GET",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "getCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/removeMembers",
+        "operation_id": "removeMembersForProject"
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_gid}/custom_field_settings",
+        "operation_id": "getCustomFieldSettingsForProject"
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{project_gid}",
+        "operation_id": "updateProject"
+      },
+      {
+        "method": "DELETE",
+        "path": "/portfolios/{portfolio_gid}",
+        "operation_id": "deletePortfolio"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/setMetricCurrentValue",
+        "operation_id": "updateGoalMetric"
+      },
+      {
+        "method": "GET",
+        "path": "/users/{user_gid}/team_memberships",
+        "operation_id": "getTeamMembershipsForUser"
+      },
+      {
+        "method": "GET",
+        "path": "/goals/{goal_gid}/parentGoals",
+        "operation_id": "getParentGoalsForGoal"
+      },
+      {
+        "method": "PUT",
+        "path": "/workspaces/{workspace_gid}",
+        "operation_id": "updateWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/tasks/{task_gid}/projects",
+        "operation_id": "getProjectsForTask"
+      },
+      {
+        "method": "POST",
+        "path": "/custom_fields/{custom_field_gid}/enum_options",
+        "operation_id": "createEnumOptionForCustomField"
+      },
+      {
+        "method": "DELETE",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "deleteCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/removeFollowers",
+        "operation_id": "removeFollowers"
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "operation_id": "createProject"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/addCustomFieldSetting",
+        "operation_id": "addCustomFieldSettingForProject"
+      },
+      {
+        "method": "POST",
+        "path": "/teams/{team_gid}/removeUser",
+        "operation_id": "removeUserForTeam"
+      }
+    ]
+  },
+  {
+    "intent": "I need to audit team names and their GIDs for the marketing org's workspace before we migrate projects\u2014can you fetch that list?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/workspaces/{workspace_gid}/teams",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/workspaces/{workspace_gid}/teams",
+        "operation_id": "getTeamsForWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/jobs/{job_gid}",
+        "operation_id": "getJob"
+      },
+      {
+        "method": "GET",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "getCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/removeMembers",
+        "operation_id": "removeMembersForProject"
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_gid}/custom_field_settings",
+        "operation_id": "getCustomFieldSettingsForProject"
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{project_gid}",
+        "operation_id": "updateProject"
+      },
+      {
+        "method": "DELETE",
+        "path": "/portfolios/{portfolio_gid}",
+        "operation_id": "deletePortfolio"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/setMetricCurrentValue",
+        "operation_id": "updateGoalMetric"
+      },
+      {
+        "method": "GET",
+        "path": "/users/{user_gid}/team_memberships",
+        "operation_id": "getTeamMembershipsForUser"
+      },
+      {
+        "method": "GET",
+        "path": "/goals/{goal_gid}/parentGoals",
+        "operation_id": "getParentGoalsForGoal"
+      },
+      {
+        "method": "PUT",
+        "path": "/workspaces/{workspace_gid}",
+        "operation_id": "updateWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/tasks/{task_gid}/projects",
+        "operation_id": "getProjectsForTask"
+      },
+      {
+        "method": "POST",
+        "path": "/custom_fields/{custom_field_gid}/enum_options",
+        "operation_id": "createEnumOptionForCustomField"
+      },
+      {
+        "method": "DELETE",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "deleteCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/removeFollowers",
+        "operation_id": "removeFollowers"
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "operation_id": "createProject"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/addCustomFieldSetting",
+        "operation_id": "addCustomFieldSettingForProject"
+      },
+      {
+        "method": "POST",
+        "path": "/teams/{team_gid}/removeUser",
+        "operation_id": "removeUserForTeam"
+      }
+    ]
+  },
+  {
+    "intent": "Can you check the status of the CSV import job we kicked off for the Salesforce contact sync, job ID 987654321? I need to know if it's finished or still processing.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/jobs/{job_gid}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/workspaces/{workspace_gid}/teams",
+        "operation_id": "getTeamsForWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/jobs/{job_gid}",
+        "operation_id": "getJob"
+      },
+      {
+        "method": "GET",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "getCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/removeMembers",
+        "operation_id": "removeMembersForProject"
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_gid}/custom_field_settings",
+        "operation_id": "getCustomFieldSettingsForProject"
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{project_gid}",
+        "operation_id": "updateProject"
+      },
+      {
+        "method": "DELETE",
+        "path": "/portfolios/{portfolio_gid}",
+        "operation_id": "deletePortfolio"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/setMetricCurrentValue",
+        "operation_id": "updateGoalMetric"
+      },
+      {
+        "method": "GET",
+        "path": "/users/{user_gid}/team_memberships",
+        "operation_id": "getTeamMembershipsForUser"
+      },
+      {
+        "method": "GET",
+        "path": "/goals/{goal_gid}/parentGoals",
+        "operation_id": "getParentGoalsForGoal"
+      },
+      {
+        "method": "PUT",
+        "path": "/workspaces/{workspace_gid}",
+        "operation_id": "updateWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/tasks/{task_gid}/projects",
+        "operation_id": "getProjectsForTask"
+      },
+      {
+        "method": "POST",
+        "path": "/custom_fields/{custom_field_gid}/enum_options",
+        "operation_id": "createEnumOptionForCustomField"
+      },
+      {
+        "method": "DELETE",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "deleteCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/removeFollowers",
+        "operation_id": "removeFollowers"
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "operation_id": "createProject"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/addCustomFieldSetting",
+        "operation_id": "addCustomFieldSettingForProject"
+      },
+      {
+        "method": "POST",
+        "path": "/teams/{team_gid}/removeUser",
+        "operation_id": "removeUserForTeam"
+      }
+    ]
+  },
+  {
+    "intent": "We started a bulk task migration a few minutes ago under job 55221100 \u2014 can you pull up its current state and let me know if it completed successfully or hit any errors?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/jobs/{job_gid}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/workspaces/{workspace_gid}/teams",
+        "operation_id": "getTeamsForWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/jobs/{job_gid}",
+        "operation_id": "getJob"
+      },
+      {
+        "method": "GET",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "getCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/removeMembers",
+        "operation_id": "removeMembersForProject"
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_gid}/custom_field_settings",
+        "operation_id": "getCustomFieldSettingsForProject"
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{project_gid}",
+        "operation_id": "updateProject"
+      },
+      {
+        "method": "DELETE",
+        "path": "/portfolios/{portfolio_gid}",
+        "operation_id": "deletePortfolio"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/setMetricCurrentValue",
+        "operation_id": "updateGoalMetric"
+      },
+      {
+        "method": "GET",
+        "path": "/users/{user_gid}/team_memberships",
+        "operation_id": "getTeamMembershipsForUser"
+      },
+      {
+        "method": "GET",
+        "path": "/goals/{goal_gid}/parentGoals",
+        "operation_id": "getParentGoalsForGoal"
+      },
+      {
+        "method": "PUT",
+        "path": "/workspaces/{workspace_gid}",
+        "operation_id": "updateWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/tasks/{task_gid}/projects",
+        "operation_id": "getProjectsForTask"
+      },
+      {
+        "method": "POST",
+        "path": "/custom_fields/{custom_field_gid}/enum_options",
+        "operation_id": "createEnumOptionForCustomField"
+      },
+      {
+        "method": "DELETE",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "deleteCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/removeFollowers",
+        "operation_id": "removeFollowers"
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "operation_id": "createProject"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/addCustomFieldSetting",
+        "operation_id": "addCustomFieldSettingForProject"
+      },
+      {
+        "method": "POST",
+        "path": "/teams/{team_gid}/removeUser",
+        "operation_id": "removeUserForTeam"
+      }
+    ]
+  },
+  {
+    "intent": "Can you pull up the details for the 'Priority Level' custom field we use in Asana, including its available dropdown options? The field ID is 1207345678901234.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/custom_fields/{custom_field_gid}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/workspaces/{workspace_gid}/teams",
+        "operation_id": "getTeamsForWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/jobs/{job_gid}",
+        "operation_id": "getJob"
+      },
+      {
+        "method": "GET",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "getCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/removeMembers",
+        "operation_id": "removeMembersForProject"
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_gid}/custom_field_settings",
+        "operation_id": "getCustomFieldSettingsForProject"
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{project_gid}",
+        "operation_id": "updateProject"
+      },
+      {
+        "method": "DELETE",
+        "path": "/portfolios/{portfolio_gid}",
+        "operation_id": "deletePortfolio"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/setMetricCurrentValue",
+        "operation_id": "updateGoalMetric"
+      },
+      {
+        "method": "GET",
+        "path": "/users/{user_gid}/team_memberships",
+        "operation_id": "getTeamMembershipsForUser"
+      },
+      {
+        "method": "GET",
+        "path": "/goals/{goal_gid}/parentGoals",
+        "operation_id": "getParentGoalsForGoal"
+      },
+      {
+        "method": "PUT",
+        "path": "/workspaces/{workspace_gid}",
+        "operation_id": "updateWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/tasks/{task_gid}/projects",
+        "operation_id": "getProjectsForTask"
+      },
+      {
+        "method": "POST",
+        "path": "/custom_fields/{custom_field_gid}/enum_options",
+        "operation_id": "createEnumOptionForCustomField"
+      },
+      {
+        "method": "DELETE",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "deleteCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/removeFollowers",
+        "operation_id": "removeFollowers"
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "operation_id": "createProject"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/addCustomFieldSetting",
+        "operation_id": "addCustomFieldSettingForProject"
+      },
+      {
+        "method": "POST",
+        "path": "/teams/{team_gid}/removeUser",
+        "operation_id": "removeUserForTeam"
+      }
+    ]
+  },
+  {
+    "intent": "I need to check the configuration of the custom field with GID 1198877665544332 to see if it's a single-select or multi-select type before we build a report around it.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/custom_fields/{custom_field_gid}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/workspaces/{workspace_gid}/teams",
+        "operation_id": "getTeamsForWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/jobs/{job_gid}",
+        "operation_id": "getJob"
+      },
+      {
+        "method": "GET",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "getCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/removeMembers",
+        "operation_id": "removeMembersForProject"
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{project_gid}/custom_field_settings",
+        "operation_id": "getCustomFieldSettingsForProject"
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{project_gid}",
+        "operation_id": "updateProject"
+      },
+      {
+        "method": "DELETE",
+        "path": "/portfolios/{portfolio_gid}",
+        "operation_id": "deletePortfolio"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/setMetricCurrentValue",
+        "operation_id": "updateGoalMetric"
+      },
+      {
+        "method": "GET",
+        "path": "/users/{user_gid}/team_memberships",
+        "operation_id": "getTeamMembershipsForUser"
+      },
+      {
+        "method": "GET",
+        "path": "/goals/{goal_gid}/parentGoals",
+        "operation_id": "getParentGoalsForGoal"
+      },
+      {
+        "method": "PUT",
+        "path": "/workspaces/{workspace_gid}",
+        "operation_id": "updateWorkspace"
+      },
+      {
+        "method": "GET",
+        "path": "/tasks/{task_gid}/projects",
+        "operation_id": "getProjectsForTask"
+      },
+      {
+        "method": "POST",
+        "path": "/custom_fields/{custom_field_gid}/enum_options",
+        "operation_id": "createEnumOptionForCustomField"
+      },
+      {
+        "method": "DELETE",
+        "path": "/custom_fields/{custom_field_gid}",
+        "operation_id": "deleteCustomField"
+      },
+      {
+        "method": "POST",
+        "path": "/goals/{goal_gid}/removeFollowers",
+        "operation_id": "removeFollowers"
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "operation_id": "createProject"
+      },
+      {
+        "method": "POST",
+        "path": "/projects/{project_gid}/addCustomFieldSetting",
+        "operation_id": "addCustomFieldSettingForProject"
+      },
+      {
+        "method": "POST",
+        "path": "/teams/{team_gid}/removeUser",
+        "operation_id": "removeUserForTeam"
+      }
+    ]
+  }
+]

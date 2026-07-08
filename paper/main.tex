@@ -1002,6 +1002,67 @@ GitHub (corrupted) & Developer/\allowbreak software & \texttt{PUT /orgs/\allowbr
 \end{tabular}
 \end{center}
 
+\section{Semantic Quality Evaluation (LLM-as-a-Judge)}
+
+\subsection{Motivation and Scope}
+Tool Selection Accuracy, used throughout Sections~6--8, is binary: did the model choose the
+correct endpoint. It cannot answer whether the call it produced is actually usable -- whether the
+arguments are correct, whether required fields are missing, or whether a parameter was invented
+outright. We add a complementary evaluation layer that scores these dimensions directly, using an
+independent LLM judge (Claude Sonnet 5) rather than a lexical-similarity metric, since this task
+has no natural reference text to score against (there is one correct endpoint, not one correct
+phrasing of a response).
+
+We deliberately do not attempt multi-step workflow evaluation here. EnterpriseSynth has no
+Planner or Knowledge Graph (Section~3.2, Section~10); every generated trajectory is a single
+endpoint call, so there is no multi-step output to evaluate. Building a workflow-success metric
+around single-step predictions would test a capability the system does not have -- the same
+overclaiming risk Section~8.3's Case Study 2 explicitly declined to paper over. Multi-step
+workflow evaluation is reserved for future work alongside the Planner and Knowledge Graph
+components themselves.
+
+\subsection{Methodology}
+For each held-out example, the judge receives the user intent, the ground-truth endpoint and its
+required parameters (from the real spec), and EnterpriseSynth's actual prediction (parsed method,
+path, and parameters -- nothing hidden or cleaned up). It scores four dimensions on a 1--5 scale
+-- intent match, argument correctness, missing parameters, reasoning quality -- and assigns a
+single primary-error category: none, wrong tool selected, missing required parameter, incorrect
+argument value, hallucinated parameter, or invalid request format. We judged all 48
+EnterpriseSynth predictions from one full seed run of Section~7.6's multi-API scaling
+(Zoom/DigitalOcean/Spotify); 47 judge responses parsed as valid JSON.
+
+\subsection{Results}
+
+\begin{center}
+\small
+\begin{tabular}{lc}
+\textbf{Dimension (1--5 scale)} & \textbf{Mean} \\
+Intent Match & 2.81 \\
+Argument Correctness & 2.19 \\
+Missing Parameters & 2.55 \\
+Reasoning Quality & 2.28 \\
+\end{tabular}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabular}{lcc}
+\textbf{Error Type} & \textbf{Count} & \textbf{\%} \\
+Wrong tool selected & 16 & 34.0\% \\
+Missing required parameter & 11 & 23.4\% \\
+Invalid request format & 5 & 10.6\% \\
+Hallucinated parameter & 3 & 6.4\% \\
+Incorrect argument value & 2 & 4.3\% \\
+\end{tabular}
+\end{center}
+
+\textbf{The central finding: binary Tool Selection Accuracy overstates practical quality by
+roughly 2$\times$.} Cross-checking the judge against the existing binary correctness flag: of the
+23 examples marked correct by binary Tool Selection Accuracy (48.9\% of 47), the judge flagged a
+real problem -- almost always a missing or hallucinated parameter -- in 14 of them (61\%). Only
+10 of 47 examples (21.3\%) are fully correct by the judge's standard. Discussed further in
+Section~10.5.
+
 \section{Discussion}
 
 \subsection{What Actually Works, and Why}
@@ -1062,6 +1123,37 @@ Constraint Validator is functionally close to ToolACE's Dual-Layer Verification 
 plus model-based checking) though we arrived at the model-based layer later, as an explicit
 ablation (A5) rather than a built-in default -- a design choice that let us measure its marginal
 value and cost separately, which Section~6.5.1 shows was worth doing.
+
+\subsection{Binary Tool Selection Accuracy Overstates Practical Quality}
+Every headline number in this paper up to this point is Tool Selection Accuracy: did the model
+choose the right endpoint. Section~9's LLM-as-a-judge evaluation (Phase 4) tests whether that is
+the right question to be asking. Using an independent LLM-based evaluator (Claude Sonnet 5,
+scoring intent match, argument correctness, missing parameters, and reasoning quality on a 1--5
+scale, plus a primary-error classification), we judged the EnterpriseSynth-tuned model's actual
+predictions on 47 held-out examples across Zoom, DigitalOcean, and Spotify.
+
+\begin{center}
+\small
+\begin{tabular}{lc}
+\textbf{Metric} & \textbf{Correct (\%)} \\
+Binary Tool Selection Accuracy & 48.9\% (23/47) \\
+LLM-judge: fully correct (no classified error) & 21.3\% (10/47) \\
+\end{tabular}
+\end{center}
+
+Although EnterpriseSynth substantially improves Tool Selection Accuracy, our semantic evaluation
+reveals that endpoint selection alone is insufficient to characterize practical API generation
+quality. Using an independent LLM-based evaluator, only 21.3\% of generated invocations were
+judged to be fully correct despite 48.9\% being classified as correct under the binary endpoint
+metric. In particular, 61\% of endpoint-correct predictions (14 of 23) contained semantic
+deficiencies such as omitted required parameters or invalid argument values -- most commonly
+missing required parameters (23.4\% of all judged examples) and outright wrong tool selection
+(34.0\%), with hallucinated parameters (6.4\%) and incorrect argument values (4.3\%) accounting
+for the remainder. These findings suggest that future evaluations of API-generation systems
+should complement endpoint-level accuracy with argument-level semantic correctness to better
+reflect deployment readiness. We report this against ourselves, not a competing method: every
+Tool Selection Accuracy number elsewhere in this paper should be read as an upper bound on
+practical correctness, not an estimate of it.
 
 \section{Limitations}
 

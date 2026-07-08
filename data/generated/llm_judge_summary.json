@@ -1,0 +1,37 @@
+{
+  "n_judged": 47,
+  "n_failed_to_parse": 1,
+  "mean_scores": {
+    "intent_match": 2.81,
+    "argument_correctness": 2.19,
+    "missing_parameters": 2.55,
+    "reasoning_quality": 2.28
+  },
+  "error_analysis": [
+    {
+      "Error Type": "wrong_tool_selected",
+      "Count": 16,
+      "Percentage": 34.0
+    },
+    {
+      "Error Type": "missing_required_parameter",
+      "Count": 11,
+      "Percentage": 23.4
+    },
+    {
+      "Error Type": "invalid_request_format",
+      "Count": 5,
+      "Percentage": 10.6
+    },
+    {
+      "Error Type": "hallucinated_parameter",
+      "Count": 3,
+      "Percentage": 6.4
+    },
+    {
+      "Error Type": "incorrect_argument_value",
+      "Count": 2,
+      "Percentage": 4.3
+    }
+  ]
+}

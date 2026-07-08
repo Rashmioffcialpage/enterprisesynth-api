@@ -1,0 +1,584 @@
+[
+  {
+    "intent": "Can you pull up the training events log for fine-tune job ft-abc123 so I can see if there were any errors during the last run?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/fine-tunes/{fine_tune_id}/events",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/fine-tunes/{fine_tune_id}/events",
+        "operation_id": "listFineTuneEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/chat/completions",
+        "operation_id": "createChatCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/answers",
+        "operation_id": "createAnswer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/models/{model}",
+        "operation_id": "deleteModel"
+      },
+      {
+        "method": "POST",
+        "path": "/engines/{engine_id}/search",
+        "operation_id": "createSearch"
+      },
+      {
+        "method": "GET",
+        "path": "/engines/{engine_id}",
+        "operation_id": "retrieveEngine"
+      },
+      {
+        "method": "GET",
+        "path": "/models/{model}",
+        "operation_id": "retrieveModel"
+      },
+      {
+        "method": "POST",
+        "path": "/edits",
+        "operation_id": "createEdit"
+      },
+      {
+        "method": "POST",
+        "path": "/completions",
+        "operation_id": "createCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes/{fine_tune_id}/cancel",
+        "operation_id": "cancelFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/classifications",
+        "operation_id": "createClassification"
+      },
+      {
+        "method": "GET",
+        "path": "/files/{file_id}/content",
+        "operation_id": "downloadFile"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/translations",
+        "operation_id": "createTranslation"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/transcriptions",
+        "operation_id": "createTranscription"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes",
+        "operation_id": "createFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/images/generations",
+        "operation_id": "createImage"
+      },
+      {
+        "method": "DELETE",
+        "path": "/files/{file_id}",
+        "operation_id": "deleteFile"
+      },
+      {
+        "method": "POST",
+        "path": "/moderations",
+        "operation_id": "createModeration"
+      }
+    ]
+  },
+  {
+    "intent": "We need to monitor the progress of our customer-support model fine-tune in real time\u2014can you stream the event updates for job ft-xyz789 as it trains?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/fine-tunes/{fine_tune_id}/events",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/fine-tunes/{fine_tune_id}/events",
+        "operation_id": "listFineTuneEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/chat/completions",
+        "operation_id": "createChatCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/answers",
+        "operation_id": "createAnswer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/models/{model}",
+        "operation_id": "deleteModel"
+      },
+      {
+        "method": "POST",
+        "path": "/engines/{engine_id}/search",
+        "operation_id": "createSearch"
+      },
+      {
+        "method": "GET",
+        "path": "/engines/{engine_id}",
+        "operation_id": "retrieveEngine"
+      },
+      {
+        "method": "GET",
+        "path": "/models/{model}",
+        "operation_id": "retrieveModel"
+      },
+      {
+        "method": "POST",
+        "path": "/edits",
+        "operation_id": "createEdit"
+      },
+      {
+        "method": "POST",
+        "path": "/completions",
+        "operation_id": "createCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes/{fine_tune_id}/cancel",
+        "operation_id": "cancelFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/classifications",
+        "operation_id": "createClassification"
+      },
+      {
+        "method": "GET",
+        "path": "/files/{file_id}/content",
+        "operation_id": "downloadFile"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/translations",
+        "operation_id": "createTranslation"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/transcriptions",
+        "operation_id": "createTranscription"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes",
+        "operation_id": "createFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/images/generations",
+        "operation_id": "createImage"
+      },
+      {
+        "method": "DELETE",
+        "path": "/files/{file_id}",
+        "operation_id": "deleteFile"
+      },
+      {
+        "method": "POST",
+        "path": "/moderations",
+        "operation_id": "createModeration"
+      }
+    ]
+  },
+  {
+    "intent": "Set up a call to our GPT-4 model that summarizes the last 20 customer support tickets into a single briefing, capping the response length so it doesn't exceed our Slack message limit.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/chat/completions",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/fine-tunes/{fine_tune_id}/events",
+        "operation_id": "listFineTuneEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/chat/completions",
+        "operation_id": "createChatCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/answers",
+        "operation_id": "createAnswer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/models/{model}",
+        "operation_id": "deleteModel"
+      },
+      {
+        "method": "POST",
+        "path": "/engines/{engine_id}/search",
+        "operation_id": "createSearch"
+      },
+      {
+        "method": "GET",
+        "path": "/engines/{engine_id}",
+        "operation_id": "retrieveEngine"
+      },
+      {
+        "method": "GET",
+        "path": "/models/{model}",
+        "operation_id": "retrieveModel"
+      },
+      {
+        "method": "POST",
+        "path": "/edits",
+        "operation_id": "createEdit"
+      },
+      {
+        "method": "POST",
+        "path": "/completions",
+        "operation_id": "createCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes/{fine_tune_id}/cancel",
+        "operation_id": "cancelFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/classifications",
+        "operation_id": "createClassification"
+      },
+      {
+        "method": "GET",
+        "path": "/files/{file_id}/content",
+        "operation_id": "downloadFile"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/translations",
+        "operation_id": "createTranslation"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/transcriptions",
+        "operation_id": "createTranscription"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes",
+        "operation_id": "createFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/images/generations",
+        "operation_id": "createImage"
+      },
+      {
+        "method": "DELETE",
+        "path": "/files/{file_id}",
+        "operation_id": "deleteFile"
+      },
+      {
+        "method": "POST",
+        "path": "/moderations",
+        "operation_id": "createModeration"
+      }
+    ]
+  },
+  {
+    "intent": "I need to generate three alternative marketing taglines from the same product description prompt, using a higher temperature for more creative variety, and make sure we're tagging the request with our internal user ID for usage tracking.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/chat/completions",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/fine-tunes/{fine_tune_id}/events",
+        "operation_id": "listFineTuneEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/chat/completions",
+        "operation_id": "createChatCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/answers",
+        "operation_id": "createAnswer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/models/{model}",
+        "operation_id": "deleteModel"
+      },
+      {
+        "method": "POST",
+        "path": "/engines/{engine_id}/search",
+        "operation_id": "createSearch"
+      },
+      {
+        "method": "GET",
+        "path": "/engines/{engine_id}",
+        "operation_id": "retrieveEngine"
+      },
+      {
+        "method": "GET",
+        "path": "/models/{model}",
+        "operation_id": "retrieveModel"
+      },
+      {
+        "method": "POST",
+        "path": "/edits",
+        "operation_id": "createEdit"
+      },
+      {
+        "method": "POST",
+        "path": "/completions",
+        "operation_id": "createCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes/{fine_tune_id}/cancel",
+        "operation_id": "cancelFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/classifications",
+        "operation_id": "createClassification"
+      },
+      {
+        "method": "GET",
+        "path": "/files/{file_id}/content",
+        "operation_id": "downloadFile"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/translations",
+        "operation_id": "createTranslation"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/transcriptions",
+        "operation_id": "createTranscription"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes",
+        "operation_id": "createFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/images/generations",
+        "operation_id": "createImage"
+      },
+      {
+        "method": "DELETE",
+        "path": "/files/{file_id}",
+        "operation_id": "deleteFile"
+      },
+      {
+        "method": "POST",
+        "path": "/moderations",
+        "operation_id": "createModeration"
+      }
+    ]
+  },
+  {
+    "intent": "Our support team needs a quick way to answer 'What's our refund policy for enterprise clients?' using the uploaded policy PDF as the knowledge source, with a couple example Q&A pairs to guide the tone\u2014can you set that up using the davinci model?",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/answers",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/fine-tunes/{fine_tune_id}/events",
+        "operation_id": "listFineTuneEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/chat/completions",
+        "operation_id": "createChatCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/answers",
+        "operation_id": "createAnswer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/models/{model}",
+        "operation_id": "deleteModel"
+      },
+      {
+        "method": "POST",
+        "path": "/engines/{engine_id}/search",
+        "operation_id": "createSearch"
+      },
+      {
+        "method": "GET",
+        "path": "/engines/{engine_id}",
+        "operation_id": "retrieveEngine"
+      },
+      {
+        "method": "GET",
+        "path": "/models/{model}",
+        "operation_id": "retrieveModel"
+      },
+      {
+        "method": "POST",
+        "path": "/edits",
+        "operation_id": "createEdit"
+      },
+      {
+        "method": "POST",
+        "path": "/completions",
+        "operation_id": "createCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes/{fine_tune_id}/cancel",
+        "operation_id": "cancelFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/classifications",
+        "operation_id": "createClassification"
+      },
+      {
+        "method": "GET",
+        "path": "/files/{file_id}/content",
+        "operation_id": "downloadFile"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/translations",
+        "operation_id": "createTranslation"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/transcriptions",
+        "operation_id": "createTranscription"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes",
+        "operation_id": "createFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/images/generations",
+        "operation_id": "createImage"
+      },
+      {
+        "method": "DELETE",
+        "path": "/files/{file_id}",
+        "operation_id": "deleteFile"
+      },
+      {
+        "method": "POST",
+        "path": "/moderations",
+        "operation_id": "createModeration"
+      }
+    ]
+  },
+  {
+    "intent": "I want to pull an answer to 'How do I reset my VPN credentials?' by searching our IT knowledge base documents, limiting reranking to the top 50 docs, and returning the confidence logprobs along with the response.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/answers",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/fine-tunes/{fine_tune_id}/events",
+        "operation_id": "listFineTuneEvents"
+      },
+      {
+        "method": "POST",
+        "path": "/chat/completions",
+        "operation_id": "createChatCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/answers",
+        "operation_id": "createAnswer"
+      },
+      {
+        "method": "DELETE",
+        "path": "/models/{model}",
+        "operation_id": "deleteModel"
+      },
+      {
+        "method": "POST",
+        "path": "/engines/{engine_id}/search",
+        "operation_id": "createSearch"
+      },
+      {
+        "method": "GET",
+        "path": "/engines/{engine_id}",
+        "operation_id": "retrieveEngine"
+      },
+      {
+        "method": "GET",
+        "path": "/models/{model}",
+        "operation_id": "retrieveModel"
+      },
+      {
+        "method": "POST",
+        "path": "/edits",
+        "operation_id": "createEdit"
+      },
+      {
+        "method": "POST",
+        "path": "/completions",
+        "operation_id": "createCompletion"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes/{fine_tune_id}/cancel",
+        "operation_id": "cancelFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/classifications",
+        "operation_id": "createClassification"
+      },
+      {
+        "method": "GET",
+        "path": "/files/{file_id}/content",
+        "operation_id": "downloadFile"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/translations",
+        "operation_id": "createTranslation"
+      },
+      {
+        "method": "POST",
+        "path": "/audio/transcriptions",
+        "operation_id": "createTranscription"
+      },
+      {
+        "method": "POST",
+        "path": "/fine-tunes",
+        "operation_id": "createFineTune"
+      },
+      {
+        "method": "POST",
+        "path": "/images/generations",
+        "operation_id": "createImage"
+      },
+      {
+        "method": "DELETE",
+        "path": "/files/{file_id}",
+        "operation_id": "deleteFile"
+      },
+      {
+        "method": "POST",
+        "path": "/moderations",
+        "operation_id": "createModeration"
+      }
+    ]
+  }
+]

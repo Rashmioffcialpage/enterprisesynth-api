@@ -1,0 +1,584 @@
+[
+  {
+    "intent": "Pull up all active memberships on our 'Q3 Product Launch' Trello board so I can confirm which admins have edit rights before we onboard the new marketing contractors.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/boards/{idBoard}/memberships",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/memberships",
+        "operation_id": "getBoardsMembershipsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/member/{field}",
+        "operation_id": "getActionsMemberByIdActionByField"
+      },
+      {
+        "method": "GET",
+        "path": "/checklists/{idChecklist}",
+        "operation_id": "getChecklistsByIdChecklist"
+      },
+      {
+        "method": "GET",
+        "path": "/cards/{idCard}/membersVoted",
+        "operation_id": "getCardsMembersVotedByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idList",
+        "operation_id": "updateCardsIdListByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/boards/{idBoard}/prefs/background",
+        "operation_id": "updateBoardsPrefsBackgroundByIdBoard"
+      },
+      {
+        "method": "DELETE",
+        "path": "/boards/{idBoard}/members/{idMember}",
+        "operation_id": "deleteBoardsMembersByIdBoardByIdMember"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/{idOrg}/memberships/{idMembership}",
+        "operation_id": "getOrganizationsMembershipsByIdOrgByIdMembership"
+      },
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/lists",
+        "operation_id": "getBoardsListsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/tokens/{token}/member",
+        "operation_id": "getTokensMemberByToken"
+      },
+      {
+        "method": "GET",
+        "path": "/members/{idMember}/notifications",
+        "operation_id": "getMembersNotificationsByIdMember"
+      },
+      {
+        "method": "PUT",
+        "path": "/actions/{idAction}/text",
+        "operation_id": "updateActionsTextByIdAction"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/organization/{field}",
+        "operation_id": "getActionsOrganizationByIdActionByField"
+      },
+      {
+        "method": "POST",
+        "path": "/boards/{idBoard}/markAsViewed",
+        "operation_id": "addBoardsMarkAsViewedByIdBoard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idBoard",
+        "operation_id": "updateCardsIdBoardByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/labels",
+        "operation_id": "updateCardsLabelsByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/{idOrg}",
+        "operation_id": "updateOrganizationsByIdOrg"
+      },
+      {
+        "method": "DELETE",
+        "path": "/tokens/{token}/webhooks/{idWebhook}",
+        "operation_id": "deleteTokensWebhooksByTokenByIdWebhook"
+      }
+    ]
+  },
+  {
+    "intent": "I need a list of every member and their role status on the client onboarding board, including their profile details, so I can audit access before the compliance review next week.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/boards/{idBoard}/memberships",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/memberships",
+        "operation_id": "getBoardsMembershipsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/member/{field}",
+        "operation_id": "getActionsMemberByIdActionByField"
+      },
+      {
+        "method": "GET",
+        "path": "/checklists/{idChecklist}",
+        "operation_id": "getChecklistsByIdChecklist"
+      },
+      {
+        "method": "GET",
+        "path": "/cards/{idCard}/membersVoted",
+        "operation_id": "getCardsMembersVotedByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idList",
+        "operation_id": "updateCardsIdListByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/boards/{idBoard}/prefs/background",
+        "operation_id": "updateBoardsPrefsBackgroundByIdBoard"
+      },
+      {
+        "method": "DELETE",
+        "path": "/boards/{idBoard}/members/{idMember}",
+        "operation_id": "deleteBoardsMembersByIdBoardByIdMember"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/{idOrg}/memberships/{idMembership}",
+        "operation_id": "getOrganizationsMembershipsByIdOrgByIdMembership"
+      },
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/lists",
+        "operation_id": "getBoardsListsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/tokens/{token}/member",
+        "operation_id": "getTokensMemberByToken"
+      },
+      {
+        "method": "GET",
+        "path": "/members/{idMember}/notifications",
+        "operation_id": "getMembersNotificationsByIdMember"
+      },
+      {
+        "method": "PUT",
+        "path": "/actions/{idAction}/text",
+        "operation_id": "updateActionsTextByIdAction"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/organization/{field}",
+        "operation_id": "getActionsOrganizationByIdActionByField"
+      },
+      {
+        "method": "POST",
+        "path": "/boards/{idBoard}/markAsViewed",
+        "operation_id": "addBoardsMarkAsViewedByIdBoard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idBoard",
+        "operation_id": "updateCardsIdBoardByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/labels",
+        "operation_id": "updateCardsLabelsByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/{idOrg}",
+        "operation_id": "updateOrganizationsByIdOrg"
+      },
+      {
+        "method": "DELETE",
+        "path": "/tokens/{token}/webhooks/{idWebhook}",
+        "operation_id": "deleteTokensWebhooksByTokenByIdWebhook"
+      }
+    ]
+  },
+  {
+    "intent": "Pull the username of the member who created card action abc123 in our project board so I can update the audit log",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/actions/{idAction}/member/{field}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/memberships",
+        "operation_id": "getBoardsMembershipsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/member/{field}",
+        "operation_id": "getActionsMemberByIdActionByField"
+      },
+      {
+        "method": "GET",
+        "path": "/checklists/{idChecklist}",
+        "operation_id": "getChecklistsByIdChecklist"
+      },
+      {
+        "method": "GET",
+        "path": "/cards/{idCard}/membersVoted",
+        "operation_id": "getCardsMembersVotedByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idList",
+        "operation_id": "updateCardsIdListByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/boards/{idBoard}/prefs/background",
+        "operation_id": "updateBoardsPrefsBackgroundByIdBoard"
+      },
+      {
+        "method": "DELETE",
+        "path": "/boards/{idBoard}/members/{idMember}",
+        "operation_id": "deleteBoardsMembersByIdBoardByIdMember"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/{idOrg}/memberships/{idMembership}",
+        "operation_id": "getOrganizationsMembershipsByIdOrgByIdMembership"
+      },
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/lists",
+        "operation_id": "getBoardsListsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/tokens/{token}/member",
+        "operation_id": "getTokensMemberByToken"
+      },
+      {
+        "method": "GET",
+        "path": "/members/{idMember}/notifications",
+        "operation_id": "getMembersNotificationsByIdMember"
+      },
+      {
+        "method": "PUT",
+        "path": "/actions/{idAction}/text",
+        "operation_id": "updateActionsTextByIdAction"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/organization/{field}",
+        "operation_id": "getActionsOrganizationByIdActionByField"
+      },
+      {
+        "method": "POST",
+        "path": "/boards/{idBoard}/markAsViewed",
+        "operation_id": "addBoardsMarkAsViewedByIdBoard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idBoard",
+        "operation_id": "updateCardsIdBoardByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/labels",
+        "operation_id": "updateCardsLabelsByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/{idOrg}",
+        "operation_id": "updateOrganizationsByIdOrg"
+      },
+      {
+        "method": "DELETE",
+        "path": "/tokens/{token}/webhooks/{idWebhook}",
+        "operation_id": "deleteTokensWebhooksByTokenByIdWebhook"
+      }
+    ]
+  },
+  {
+    "intent": "I need to check the fullName field for whoever performed action xyz789 on that Trello card before we finalize the compliance report",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/actions/{idAction}/member/{field}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/memberships",
+        "operation_id": "getBoardsMembershipsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/member/{field}",
+        "operation_id": "getActionsMemberByIdActionByField"
+      },
+      {
+        "method": "GET",
+        "path": "/checklists/{idChecklist}",
+        "operation_id": "getChecklistsByIdChecklist"
+      },
+      {
+        "method": "GET",
+        "path": "/cards/{idCard}/membersVoted",
+        "operation_id": "getCardsMembersVotedByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idList",
+        "operation_id": "updateCardsIdListByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/boards/{idBoard}/prefs/background",
+        "operation_id": "updateBoardsPrefsBackgroundByIdBoard"
+      },
+      {
+        "method": "DELETE",
+        "path": "/boards/{idBoard}/members/{idMember}",
+        "operation_id": "deleteBoardsMembersByIdBoardByIdMember"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/{idOrg}/memberships/{idMembership}",
+        "operation_id": "getOrganizationsMembershipsByIdOrgByIdMembership"
+      },
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/lists",
+        "operation_id": "getBoardsListsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/tokens/{token}/member",
+        "operation_id": "getTokensMemberByToken"
+      },
+      {
+        "method": "GET",
+        "path": "/members/{idMember}/notifications",
+        "operation_id": "getMembersNotificationsByIdMember"
+      },
+      {
+        "method": "PUT",
+        "path": "/actions/{idAction}/text",
+        "operation_id": "updateActionsTextByIdAction"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/organization/{field}",
+        "operation_id": "getActionsOrganizationByIdActionByField"
+      },
+      {
+        "method": "POST",
+        "path": "/boards/{idBoard}/markAsViewed",
+        "operation_id": "addBoardsMarkAsViewedByIdBoard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idBoard",
+        "operation_id": "updateCardsIdBoardByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/labels",
+        "operation_id": "updateCardsLabelsByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/{idOrg}",
+        "operation_id": "updateOrganizationsByIdOrg"
+      },
+      {
+        "method": "DELETE",
+        "path": "/tokens/{token}/webhooks/{idWebhook}",
+        "operation_id": "deleteTokensWebhooksByTokenByIdWebhook"
+      }
+    ]
+  },
+  {
+    "intent": "Pull up the onboarding checklist for our new hires with all the check items and their completion status so I can review progress before the team meeting.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/checklists/{idChecklist}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/memberships",
+        "operation_id": "getBoardsMembershipsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/member/{field}",
+        "operation_id": "getActionsMemberByIdActionByField"
+      },
+      {
+        "method": "GET",
+        "path": "/checklists/{idChecklist}",
+        "operation_id": "getChecklistsByIdChecklist"
+      },
+      {
+        "method": "GET",
+        "path": "/cards/{idCard}/membersVoted",
+        "operation_id": "getCardsMembersVotedByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idList",
+        "operation_id": "updateCardsIdListByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/boards/{idBoard}/prefs/background",
+        "operation_id": "updateBoardsPrefsBackgroundByIdBoard"
+      },
+      {
+        "method": "DELETE",
+        "path": "/boards/{idBoard}/members/{idMember}",
+        "operation_id": "deleteBoardsMembersByIdBoardByIdMember"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/{idOrg}/memberships/{idMembership}",
+        "operation_id": "getOrganizationsMembershipsByIdOrgByIdMembership"
+      },
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/lists",
+        "operation_id": "getBoardsListsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/tokens/{token}/member",
+        "operation_id": "getTokensMemberByToken"
+      },
+      {
+        "method": "GET",
+        "path": "/members/{idMember}/notifications",
+        "operation_id": "getMembersNotificationsByIdMember"
+      },
+      {
+        "method": "PUT",
+        "path": "/actions/{idAction}/text",
+        "operation_id": "updateActionsTextByIdAction"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/organization/{field}",
+        "operation_id": "getActionsOrganizationByIdActionByField"
+      },
+      {
+        "method": "POST",
+        "path": "/boards/{idBoard}/markAsViewed",
+        "operation_id": "addBoardsMarkAsViewedByIdBoard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idBoard",
+        "operation_id": "updateCardsIdBoardByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/labels",
+        "operation_id": "updateCardsLabelsByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/{idOrg}",
+        "operation_id": "updateOrganizationsByIdOrg"
+      },
+      {
+        "method": "DELETE",
+        "path": "/tokens/{token}/webhooks/{idWebhook}",
+        "operation_id": "deleteTokensWebhooksByTokenByIdWebhook"
+      }
+    ]
+  },
+  {
+    "intent": "I need to see the full details of the vendor compliance checklist, including any linked cards and field data, for the audit report we're compiling this week.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/checklists/{idChecklist}",
+    "candidates": [
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/memberships",
+        "operation_id": "getBoardsMembershipsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/member/{field}",
+        "operation_id": "getActionsMemberByIdActionByField"
+      },
+      {
+        "method": "GET",
+        "path": "/checklists/{idChecklist}",
+        "operation_id": "getChecklistsByIdChecklist"
+      },
+      {
+        "method": "GET",
+        "path": "/cards/{idCard}/membersVoted",
+        "operation_id": "getCardsMembersVotedByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idList",
+        "operation_id": "updateCardsIdListByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/boards/{idBoard}/prefs/background",
+        "operation_id": "updateBoardsPrefsBackgroundByIdBoard"
+      },
+      {
+        "method": "DELETE",
+        "path": "/boards/{idBoard}/members/{idMember}",
+        "operation_id": "deleteBoardsMembersByIdBoardByIdMember"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/{idOrg}/memberships/{idMembership}",
+        "operation_id": "getOrganizationsMembershipsByIdOrgByIdMembership"
+      },
+      {
+        "method": "GET",
+        "path": "/boards/{idBoard}/lists",
+        "operation_id": "getBoardsListsByIdBoard"
+      },
+      {
+        "method": "GET",
+        "path": "/tokens/{token}/member",
+        "operation_id": "getTokensMemberByToken"
+      },
+      {
+        "method": "GET",
+        "path": "/members/{idMember}/notifications",
+        "operation_id": "getMembersNotificationsByIdMember"
+      },
+      {
+        "method": "PUT",
+        "path": "/actions/{idAction}/text",
+        "operation_id": "updateActionsTextByIdAction"
+      },
+      {
+        "method": "GET",
+        "path": "/actions/{idAction}/organization/{field}",
+        "operation_id": "getActionsOrganizationByIdActionByField"
+      },
+      {
+        "method": "POST",
+        "path": "/boards/{idBoard}/markAsViewed",
+        "operation_id": "addBoardsMarkAsViewedByIdBoard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/idBoard",
+        "operation_id": "updateCardsIdBoardByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/{idCard}/labels",
+        "operation_id": "updateCardsLabelsByIdCard"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/{idOrg}",
+        "operation_id": "updateOrganizationsByIdOrg"
+      },
+      {
+        "method": "DELETE",
+        "path": "/tokens/{token}/webhooks/{idWebhook}",
+        "operation_id": "deleteTokensWebhooksByTokenByIdWebhook"
+      }
+    ]
+  }
+]

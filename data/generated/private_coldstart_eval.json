@@ -1,0 +1,1082 @@
+[
+  {
+    "domain": "asset_management",
+    "intent": "Register a new Dell laptop with serial number SN-4471829 under the Marketing department, purchased on 2024-03-15.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/assets/register",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/assets/register",
+        "operation_id": "registerAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/retire",
+        "operation_id": "retireAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/maintenance/schedule",
+        "operation_id": "scheduleMaintenanceEvent"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/transfer",
+        "operation_id": "transferAsset"
+      },
+      {
+        "method": "GET",
+        "path": "/assets/{asset_id}/maintenance",
+        "operation_id": "getMaintenanceHistory"
+      }
+    ]
+  },
+  {
+    "domain": "asset_management",
+    "intent": "We just received a batch of forklifts for the Warehouse team\u2014can you log the first one, serial WH-FL-2201, into the asset system as equipment type 'forklift'?",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/assets/register",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/assets/register",
+        "operation_id": "registerAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/retire",
+        "operation_id": "retireAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/maintenance/schedule",
+        "operation_id": "scheduleMaintenanceEvent"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/transfer",
+        "operation_id": "transferAsset"
+      },
+      {
+        "method": "GET",
+        "path": "/assets/{asset_id}/maintenance",
+        "operation_id": "getMaintenanceHistory"
+      }
+    ]
+  },
+  {
+    "domain": "asset_management",
+    "intent": "Please retire laptop asset AST-45210 from inventory \u2014 it failed diagnostics and is being replaced under warranty.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/assets/{asset_id}/retire",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/assets/register",
+        "operation_id": "registerAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/retire",
+        "operation_id": "retireAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/maintenance/schedule",
+        "operation_id": "scheduleMaintenanceEvent"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/transfer",
+        "operation_id": "transferAsset"
+      },
+      {
+        "method": "GET",
+        "path": "/assets/{asset_id}/maintenance",
+        "operation_id": "getMaintenanceHistory"
+      }
+    ]
+  },
+  {
+    "domain": "asset_management",
+    "intent": "Mark server rack unit SRV-7788 as retired in the system since we're decommissioning the old data center and moving everything to the cloud.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/assets/{asset_id}/retire",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/assets/register",
+        "operation_id": "registerAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/retire",
+        "operation_id": "retireAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/maintenance/schedule",
+        "operation_id": "scheduleMaintenanceEvent"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/transfer",
+        "operation_id": "transferAsset"
+      },
+      {
+        "method": "GET",
+        "path": "/assets/{asset_id}/maintenance",
+        "operation_id": "getMaintenanceHistory"
+      }
+    ]
+  },
+  {
+    "domain": "asset_management",
+    "intent": "Schedule a preventive maintenance check for pump asset AST-4521 on November 15th",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/assets/{asset_id}/maintenance/schedule",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/assets/register",
+        "operation_id": "registerAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/retire",
+        "operation_id": "retireAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/maintenance/schedule",
+        "operation_id": "scheduleMaintenanceEvent"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/transfer",
+        "operation_id": "transferAsset"
+      },
+      {
+        "method": "GET",
+        "path": "/assets/{asset_id}/maintenance",
+        "operation_id": "getMaintenanceHistory"
+      }
+    ]
+  },
+  {
+    "domain": "asset_management",
+    "intent": "We need to book an emergency repair visit for the HVAC unit at our downtown facility for tomorrow morning",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/assets/{asset_id}/maintenance/schedule",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/assets/register",
+        "operation_id": "registerAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/retire",
+        "operation_id": "retireAsset"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/maintenance/schedule",
+        "operation_id": "scheduleMaintenanceEvent"
+      },
+      {
+        "method": "POST",
+        "path": "/assets/{asset_id}/transfer",
+        "operation_id": "transferAsset"
+      },
+      {
+        "method": "GET",
+        "path": "/assets/{asset_id}/maintenance",
+        "operation_id": "getMaintenanceHistory"
+      }
+    ]
+  },
+  {
+    "domain": "crm",
+    "intent": "Set up a new 24-month contract for Acme Corp at $120,000 annual value, tied to the opportunity we just closed-won in Salesforce.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/contracts",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/contracts",
+        "operation_id": "createContract"
+      },
+      {
+        "method": "POST",
+        "path": "/customers/search",
+        "operation_id": "searchCustomers"
+      },
+      {
+        "method": "GET",
+        "path": "/contracts/{contract_id}",
+        "operation_id": "getContract"
+      },
+      {
+        "method": "PATCH",
+        "path": "/opportunities/{opportunity_id}/stage",
+        "operation_id": "updateOpportunityStage"
+      },
+      {
+        "method": "POST",
+        "path": "/opportunities",
+        "operation_id": "createOpportunity"
+      },
+      {
+        "method": "GET",
+        "path": "/customers/{customer_id}/risk",
+        "operation_id": "getCustomerRisk"
+      }
+    ]
+  },
+  {
+    "domain": "crm",
+    "intent": "Can you create a 3-year contract for customer ID CUST-4521 with an annual value of $85,000? No linked opportunity needed, this one's a renewal we handled offline.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/contracts",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/contracts",
+        "operation_id": "createContract"
+      },
+      {
+        "method": "POST",
+        "path": "/customers/search",
+        "operation_id": "searchCustomers"
+      },
+      {
+        "method": "GET",
+        "path": "/contracts/{contract_id}",
+        "operation_id": "getContract"
+      },
+      {
+        "method": "PATCH",
+        "path": "/opportunities/{opportunity_id}/stage",
+        "operation_id": "updateOpportunityStage"
+      },
+      {
+        "method": "POST",
+        "path": "/opportunities",
+        "operation_id": "createOpportunity"
+      },
+      {
+        "method": "GET",
+        "path": "/customers/{customer_id}/risk",
+        "operation_id": "getCustomerRisk"
+      }
+    ]
+  },
+  {
+    "domain": "crm",
+    "intent": "Can you pull up all enterprise-tier accounts in the EMEA region that match the name 'Nordic Logistics'? I need to check for duplicates before we create a new record.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/customers/search",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/contracts",
+        "operation_id": "createContract"
+      },
+      {
+        "method": "POST",
+        "path": "/customers/search",
+        "operation_id": "searchCustomers"
+      },
+      {
+        "method": "GET",
+        "path": "/contracts/{contract_id}",
+        "operation_id": "getContract"
+      },
+      {
+        "method": "PATCH",
+        "path": "/opportunities/{opportunity_id}/stage",
+        "operation_id": "updateOpportunityStage"
+      },
+      {
+        "method": "POST",
+        "path": "/opportunities",
+        "operation_id": "createOpportunity"
+      },
+      {
+        "method": "GET",
+        "path": "/customers/{customer_id}/risk",
+        "operation_id": "getCustomerRisk"
+      }
+    ]
+  },
+  {
+    "domain": "crm",
+    "intent": "Find the top 20 customers in APAC on our premium tier whose company name contains 'Tech' \u2014 I'm prepping a list for the renewals team.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/customers/search",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/contracts",
+        "operation_id": "createContract"
+      },
+      {
+        "method": "POST",
+        "path": "/customers/search",
+        "operation_id": "searchCustomers"
+      },
+      {
+        "method": "GET",
+        "path": "/contracts/{contract_id}",
+        "operation_id": "getContract"
+      },
+      {
+        "method": "PATCH",
+        "path": "/opportunities/{opportunity_id}/stage",
+        "operation_id": "updateOpportunityStage"
+      },
+      {
+        "method": "POST",
+        "path": "/opportunities",
+        "operation_id": "createOpportunity"
+      },
+      {
+        "method": "GET",
+        "path": "/customers/{customer_id}/risk",
+        "operation_id": "getCustomerRisk"
+      }
+    ]
+  },
+  {
+    "domain": "crm",
+    "intent": "Can you pull up the details for contract CT-48821? I need to check the renewal terms before our call with the vendor.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/contracts/{contract_id}",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/contracts",
+        "operation_id": "createContract"
+      },
+      {
+        "method": "POST",
+        "path": "/customers/search",
+        "operation_id": "searchCustomers"
+      },
+      {
+        "method": "GET",
+        "path": "/contracts/{contract_id}",
+        "operation_id": "getContract"
+      },
+      {
+        "method": "PATCH",
+        "path": "/opportunities/{opportunity_id}/stage",
+        "operation_id": "updateOpportunityStage"
+      },
+      {
+        "method": "POST",
+        "path": "/opportunities",
+        "operation_id": "createOpportunity"
+      },
+      {
+        "method": "GET",
+        "path": "/customers/{customer_id}/risk",
+        "operation_id": "getCustomerRisk"
+      }
+    ]
+  },
+  {
+    "domain": "crm",
+    "intent": "I need to verify the payment schedule on contract number 90231-B for the Q3 audit, can you look it up?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/contracts/{contract_id}",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/contracts",
+        "operation_id": "createContract"
+      },
+      {
+        "method": "POST",
+        "path": "/customers/search",
+        "operation_id": "searchCustomers"
+      },
+      {
+        "method": "GET",
+        "path": "/contracts/{contract_id}",
+        "operation_id": "getContract"
+      },
+      {
+        "method": "PATCH",
+        "path": "/opportunities/{opportunity_id}/stage",
+        "operation_id": "updateOpportunityStage"
+      },
+      {
+        "method": "POST",
+        "path": "/opportunities",
+        "operation_id": "createOpportunity"
+      },
+      {
+        "method": "GET",
+        "path": "/customers/{customer_id}/risk",
+        "operation_id": "getCustomerRisk"
+      }
+    ]
+  },
+  {
+    "domain": "hris",
+    "intent": "Enroll employee E10457 in the PPO health plan PLN-2024-PPO and add his spouse and two kids as dependents.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/benefits/enroll",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/benefits/enroll",
+        "operation_id": "enrollBenefits"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/onboard",
+        "operation_id": "onboardEmployee"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/salary/adjust",
+        "operation_id": "adjustEmployeeSalary"
+      },
+      {
+        "method": "GET",
+        "path": "/employees/{employee_id}/salary",
+        "operation_id": "getEmployeeSalary"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests/{request_id}/approve",
+        "operation_id": "approveLeaveRequest"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests",
+        "operation_id": "createLeaveRequest"
+      }
+    ]
+  },
+  {
+    "domain": "hris",
+    "intent": "New hire Sarah Jenkins just finished onboarding, please sign her up for the standard dental plan with no dependents.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/benefits/enroll",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/benefits/enroll",
+        "operation_id": "enrollBenefits"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/onboard",
+        "operation_id": "onboardEmployee"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/salary/adjust",
+        "operation_id": "adjustEmployeeSalary"
+      },
+      {
+        "method": "GET",
+        "path": "/employees/{employee_id}/salary",
+        "operation_id": "getEmployeeSalary"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests/{request_id}/approve",
+        "operation_id": "approveLeaveRequest"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests",
+        "operation_id": "createLeaveRequest"
+      }
+    ]
+  },
+  {
+    "domain": "hris",
+    "intent": "Get Priya Nair set up in the system starting March 3rd \u2014 she's joining the Marketing team full-time and will report to David Chen (employee ID M4521).",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/employees/{employee_id}/onboard",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/benefits/enroll",
+        "operation_id": "enrollBenefits"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/onboard",
+        "operation_id": "onboardEmployee"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/salary/adjust",
+        "operation_id": "adjustEmployeeSalary"
+      },
+      {
+        "method": "GET",
+        "path": "/employees/{employee_id}/salary",
+        "operation_id": "getEmployeeSalary"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests/{request_id}/approve",
+        "operation_id": "approveLeaveRequest"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests",
+        "operation_id": "createLeaveRequest"
+      }
+    ]
+  },
+  {
+    "domain": "hris",
+    "intent": "Please onboard our new contractor, employee ID E10938, into the Data Engineering department starting next Monday, reporting to manager E20456.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/employees/{employee_id}/onboard",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/benefits/enroll",
+        "operation_id": "enrollBenefits"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/onboard",
+        "operation_id": "onboardEmployee"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/salary/adjust",
+        "operation_id": "adjustEmployeeSalary"
+      },
+      {
+        "method": "GET",
+        "path": "/employees/{employee_id}/salary",
+        "operation_id": "getEmployeeSalary"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests/{request_id}/approve",
+        "operation_id": "approveLeaveRequest"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests",
+        "operation_id": "createLeaveRequest"
+      }
+    ]
+  },
+  {
+    "domain": "hris",
+    "intent": "Give Priya Nair a merit increase to $98,500 a year, effective the first of next month \u2014 she just completed her promotion to Senior Analyst.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/employees/{employee_id}/salary/adjust",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/benefits/enroll",
+        "operation_id": "enrollBenefits"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/onboard",
+        "operation_id": "onboardEmployee"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/salary/adjust",
+        "operation_id": "adjustEmployeeSalary"
+      },
+      {
+        "method": "GET",
+        "path": "/employees/{employee_id}/salary",
+        "operation_id": "getEmployeeSalary"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests/{request_id}/approve",
+        "operation_id": "approveLeaveRequest"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests",
+        "operation_id": "createLeaveRequest"
+      }
+    ]
+  },
+  {
+    "domain": "hris",
+    "intent": "Employee 4521 accepted the counteroffer; please update his annual salary to $142,000 starting June 1st and note it's a retention adjustment.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/employees/{employee_id}/salary/adjust",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/benefits/enroll",
+        "operation_id": "enrollBenefits"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/onboard",
+        "operation_id": "onboardEmployee"
+      },
+      {
+        "method": "POST",
+        "path": "/employees/{employee_id}/salary/adjust",
+        "operation_id": "adjustEmployeeSalary"
+      },
+      {
+        "method": "GET",
+        "path": "/employees/{employee_id}/salary",
+        "operation_id": "getEmployeeSalary"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests/{request_id}/approve",
+        "operation_id": "approveLeaveRequest"
+      },
+      {
+        "method": "POST",
+        "path": "/leave-requests",
+        "operation_id": "createLeaveRequest"
+      }
+    ]
+  },
+  {
+    "domain": "procurement",
+    "intent": "The approval request for PO-48213 has been sitting untouched for a week and the vendor is threatening to cancel our discount\u2014please escalate it to my director with a note explaining the urgency.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/approvals/{approval_id}/escalate",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/approvals/{approval_id}/escalate",
+        "operation_id": "escalateApproval"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders",
+        "operation_id": "createPurchaseOrder"
+      },
+      {
+        "method": "GET",
+        "path": "/inventory/{sku}",
+        "operation_id": "getInventoryLevel"
+      },
+      {
+        "method": "GET",
+        "path": "/vendors/{vendor_id}",
+        "operation_id": "getVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/vendors",
+        "operation_id": "registerVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders/{po_id}/approve",
+        "operation_id": "approvePurchaseOrder"
+      }
+    ]
+  },
+  {
+    "domain": "procurement",
+    "intent": "Escalate approval request APR-7729 to the VP level since the current approver is out on medical leave and we need a sign-off before the contract deadline tomorrow.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/approvals/{approval_id}/escalate",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/approvals/{approval_id}/escalate",
+        "operation_id": "escalateApproval"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders",
+        "operation_id": "createPurchaseOrder"
+      },
+      {
+        "method": "GET",
+        "path": "/inventory/{sku}",
+        "operation_id": "getInventoryLevel"
+      },
+      {
+        "method": "GET",
+        "path": "/vendors/{vendor_id}",
+        "operation_id": "getVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/vendors",
+        "operation_id": "registerVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders/{po_id}/approve",
+        "operation_id": "approvePurchaseOrder"
+      }
+    ]
+  },
+  {
+    "domain": "procurement",
+    "intent": "Create a purchase order for vendor Acme Office Supplies for 50 ergonomic chairs and 20 standing desks, total coming to $18,400, and charge it to the Facilities cost center.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/purchase-orders",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/approvals/{approval_id}/escalate",
+        "operation_id": "escalateApproval"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders",
+        "operation_id": "createPurchaseOrder"
+      },
+      {
+        "method": "GET",
+        "path": "/inventory/{sku}",
+        "operation_id": "getInventoryLevel"
+      },
+      {
+        "method": "GET",
+        "path": "/vendors/{vendor_id}",
+        "operation_id": "getVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/vendors",
+        "operation_id": "registerVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders/{po_id}/approve",
+        "operation_id": "approvePurchaseOrder"
+      }
+    ]
+  },
+  {
+    "domain": "procurement",
+    "intent": "I need to cut a PO to our new packaging supplier for the line items we negotiated last week\u2014total is $7,250, no specific cost center needed yet.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/purchase-orders",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/approvals/{approval_id}/escalate",
+        "operation_id": "escalateApproval"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders",
+        "operation_id": "createPurchaseOrder"
+      },
+      {
+        "method": "GET",
+        "path": "/inventory/{sku}",
+        "operation_id": "getInventoryLevel"
+      },
+      {
+        "method": "GET",
+        "path": "/vendors/{vendor_id}",
+        "operation_id": "getVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/vendors",
+        "operation_id": "registerVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders/{po_id}/approve",
+        "operation_id": "approvePurchaseOrder"
+      }
+    ]
+  },
+  {
+    "domain": "procurement",
+    "intent": "Can you check how many units of SKU WH-4432-BLK we currently have in stock before I confirm this bulk order with the customer?",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/inventory/{sku}",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/approvals/{approval_id}/escalate",
+        "operation_id": "escalateApproval"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders",
+        "operation_id": "createPurchaseOrder"
+      },
+      {
+        "method": "GET",
+        "path": "/inventory/{sku}",
+        "operation_id": "getInventoryLevel"
+      },
+      {
+        "method": "GET",
+        "path": "/vendors/{vendor_id}",
+        "operation_id": "getVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/vendors",
+        "operation_id": "registerVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders/{po_id}/approve",
+        "operation_id": "approvePurchaseOrder"
+      }
+    ]
+  },
+  {
+    "domain": "procurement",
+    "intent": "I need to see the current inventory count for item SKU A19-2201 to figure out if we should trigger a reorder with our supplier.",
+    "ground_truth_method": "GET",
+    "ground_truth_path": "/inventory/{sku}",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/approvals/{approval_id}/escalate",
+        "operation_id": "escalateApproval"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders",
+        "operation_id": "createPurchaseOrder"
+      },
+      {
+        "method": "GET",
+        "path": "/inventory/{sku}",
+        "operation_id": "getInventoryLevel"
+      },
+      {
+        "method": "GET",
+        "path": "/vendors/{vendor_id}",
+        "operation_id": "getVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/vendors",
+        "operation_id": "registerVendor"
+      },
+      {
+        "method": "POST",
+        "path": "/purchase-orders/{po_id}/approve",
+        "operation_id": "approvePurchaseOrder"
+      }
+    ]
+  },
+  {
+    "domain": "ticketing",
+    "intent": "Log a critical incident for the payment gateway outage \u2014 title it 'Payment API returning 500 errors', severity is critical, and I'm reporting it under my user ID emp-4471.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/incidents",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/incidents",
+        "operation_id": "createIncident"
+      },
+      {
+        "method": "PATCH",
+        "path": "/incidents/{incident_id}/assign",
+        "operation_id": "assignIncident"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/resolve",
+        "operation_id": "resolveIncident"
+      },
+      {
+        "method": "GET",
+        "path": "/slas/{sla_id}",
+        "operation_id": "getSlaStatus"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/escalate",
+        "operation_id": "escalateIncident"
+      }
+    ]
+  },
+  {
+    "domain": "ticketing",
+    "intent": "Open a new incident ticket for the intermittent login failures affecting the customer portal, mark it as medium severity, reporter is jsmith92, and note that the affected service is the auth-service.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/incidents",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/incidents",
+        "operation_id": "createIncident"
+      },
+      {
+        "method": "PATCH",
+        "path": "/incidents/{incident_id}/assign",
+        "operation_id": "assignIncident"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/resolve",
+        "operation_id": "resolveIncident"
+      },
+      {
+        "method": "GET",
+        "path": "/slas/{sla_id}",
+        "operation_id": "getSlaStatus"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/escalate",
+        "operation_id": "escalateIncident"
+      }
+    ]
+  },
+  {
+    "domain": "ticketing",
+    "intent": "Reassign incident INC-4521 to Priya on the network team since she's already troubleshooting the related outage",
+    "ground_truth_method": "PATCH",
+    "ground_truth_path": "/incidents/{incident_id}/assign",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/incidents",
+        "operation_id": "createIncident"
+      },
+      {
+        "method": "PATCH",
+        "path": "/incidents/{incident_id}/assign",
+        "operation_id": "assignIncident"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/resolve",
+        "operation_id": "resolveIncident"
+      },
+      {
+        "method": "GET",
+        "path": "/slas/{sla_id}",
+        "operation_id": "getSlaStatus"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/escalate",
+        "operation_id": "escalateIncident"
+      }
+    ]
+  },
+  {
+    "domain": "ticketing",
+    "intent": "Can you put ticket #78932 under Marcus's name? He's covering on-call for Jake while he's out this week",
+    "ground_truth_method": "PATCH",
+    "ground_truth_path": "/incidents/{incident_id}/assign",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/incidents",
+        "operation_id": "createIncident"
+      },
+      {
+        "method": "PATCH",
+        "path": "/incidents/{incident_id}/assign",
+        "operation_id": "assignIncident"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/resolve",
+        "operation_id": "resolveIncident"
+      },
+      {
+        "method": "GET",
+        "path": "/slas/{sla_id}",
+        "operation_id": "getSlaStatus"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/escalate",
+        "operation_id": "escalateIncident"
+      }
+    ]
+  },
+  {
+    "domain": "ticketing",
+    "intent": "Close out incident INC-4521 with a note that the database failover script fixed the replication lag, root cause was a misconfigured timeout on the secondary node.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/incidents/{incident_id}/resolve",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/incidents",
+        "operation_id": "createIncident"
+      },
+      {
+        "method": "PATCH",
+        "path": "/incidents/{incident_id}/assign",
+        "operation_id": "assignIncident"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/resolve",
+        "operation_id": "resolveIncident"
+      },
+      {
+        "method": "GET",
+        "path": "/slas/{sla_id}",
+        "operation_id": "getSlaStatus"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/escalate",
+        "operation_id": "escalateIncident"
+      }
+    ]
+  },
+  {
+    "domain": "ticketing",
+    "intent": "Mark the payment gateway outage ticket as resolved\u2014summarize that we rolled back the last deployment to restore checkout functionality, and flag the root cause as an untested API version mismatch.",
+    "ground_truth_method": "POST",
+    "ground_truth_path": "/incidents/{incident_id}/resolve",
+    "candidates": [
+      {
+        "method": "POST",
+        "path": "/incidents",
+        "operation_id": "createIncident"
+      },
+      {
+        "method": "PATCH",
+        "path": "/incidents/{incident_id}/assign",
+        "operation_id": "assignIncident"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/resolve",
+        "operation_id": "resolveIncident"
+      },
+      {
+        "method": "GET",
+        "path": "/slas/{sla_id}",
+        "operation_id": "getSlaStatus"
+      },
+      {
+        "method": "POST",
+        "path": "/incidents/{incident_id}/escalate",
+        "operation_id": "escalateIncident"
+      }
+    ]
+  }
+]

@@ -1171,9 +1171,74 @@ API where that gap is already visible.
 
 ---
 
-## 10. Discussion
+## 10. Semantic Quality Evaluation (LLM-as-a-Judge)
 
-### 10.1 What Actually Works, and Why
+### 10.1 Motivation and Scope
+
+Tool Selection Accuracy, used throughout §7–§9, is binary: did the model choose the correct
+endpoint. It cannot answer whether the call it produced is actually usable — whether the
+arguments are correct, whether required fields are missing, or whether a parameter was invented
+outright. We add a complementary evaluation layer that scores these dimensions directly, using an
+independent LLM judge (Claude Sonnet 5) rather than a lexical-similarity metric, since this task
+has no natural reference text to score against (there is one correct endpoint, not one correct
+phrasing of a response).
+
+We deliberately do not attempt multi-step workflow evaluation here. EnterpriseSynth has no
+Planner or Knowledge Graph (§4, §12); every generated trajectory is a single endpoint call, so
+there is no multi-step output to evaluate. Building a workflow-success metric around single-step
+predictions would test a capability the system does not have — the same overclaiming risk §9.3's
+Case Study 2 explicitly declined to paper over. Multi-step workflow evaluation is reserved for
+future work alongside the Planner and Knowledge Graph components themselves.
+
+### 10.2 Methodology
+
+For each held-out example, the judge receives the user intent, the ground-truth endpoint and its
+required parameters (from the real spec), and EnterpriseSynth's actual prediction (parsed method,
+path, and parameters — nothing hidden or cleaned up). It scores four dimensions on a 1–5 scale —
+intent match, argument correctness, missing parameters, reasoning quality — and assigns a single
+primary-error category: none, wrong tool selected, missing required parameter, incorrect argument
+value, hallucinated parameter, or invalid request format. We judged all 48 EnterpriseSynth
+predictions from one full seed run of §7.6's multi-API scaling (Zoom/DigitalOcean/Spotify); 47
+judge responses parsed as valid JSON. Implementation: `src/enterprisesynth/llm_judge.py`,
+`scripts/run_llm_judge_eval.py`.
+
+### 10.3 Results
+
+| Dimension (1–5 scale) | Mean |
+| --- | --- |
+| Intent Match | 2.81 |
+| Argument Correctness | 2.19 |
+| Missing Parameters | 2.55 |
+| Reasoning Quality | 2.28 |
+
+| Error Type | Count | % |
+| --- | --- | --- |
+| Wrong tool selected | 16 | 34.0% |
+| Missing required parameter | 11 | 23.4% |
+| Invalid request format | 5 | 10.6% |
+| Hallucinated parameter | 3 | 6.4% |
+| Incorrect argument value | 2 | 4.3% |
+
+**The central finding: binary Tool Selection Accuracy overstates practical quality by roughly
+2×.** Cross-checking the judge against the existing binary correctness flag: of the 23 examples
+marked correct by binary Tool Selection Accuracy (48.9% of 47), the judge flagged a real problem
+— almost always a missing or hallucinated parameter — in 14 of them (61%). Only 10 of 47 examples
+(21.3%) are fully correct by the judge's standard. Discussed further in §11.5.
+
+**A real bug found and fixed while building this evaluation:** the first version used
+`max_tokens=250` for the judge call. Claude Sonnet 5 spent the entire budget on an internal
+`thinking` block before ever writing the JSON answer, so 17 of 48 judge calls (35%) were cut off
+mid-thought (`stop_reason: max_tokens`) with zero text output — not a malformed response, no
+response at all. Raising `max_tokens` to 1200 dropped the failure rate to 1/48 (2%). Reported
+here because it's the same category of lesson as Experiment 4's adversarial-testing story
+(§7.5): a plausible-looking evaluation pipeline can silently fail a third of the time if you
+don't check its own success rate.
+
+---
+
+## 11. Discussion
+
+### 11.1 What Actually Works, and Why
 
 Two results in this paper are load-bearing, not decorative. First, Schema Verification (Stage 4)
 is unambiguously necessary: A2 shows a binary 0%-vs-100% gap between no verification and ours —
@@ -1186,7 +1251,7 @@ input — it has to be adversarially tested against bad input it is specifically
 A non-adversarial test suite would have shipped a verifier that silently passed roughly a third to
 a half of planted errors.
 
-### 10.2 Verification Has Limits by Design, and the Haiku Arm Quantifies Them
+### 11.2 Verification Has Limits by Design, and the Haiku Arm Quantifies Them
 
 The deterministic gate checks structure, not semantics — it cannot know that a negated charge
 amount or a placeholder field value is wrong, because both are still well-typed. The Haiku 4.5
@@ -1201,7 +1266,7 @@ per parameter type (e.g. restricted to amounts, dates, and other fields where "p
 well-defined) — exactly the shape ToolACE's and AgentInstruct's own dual-layer designs converge
 on, for related reasons.
 
-### 10.3 The Downstream Effect Is Real but Not Uniform, and That Is Itself a Finding
+### 11.3 The Downstream Effect Is Real but Not Uniform, and That Is Itself a Finding
 
 Experiment 5's single-Zoom result (12.5%→87.5%) was the strongest number in an earlier draft of
 this paper. Scaling to three held-out APIs changed the story without reversing it:
@@ -1221,7 +1286,7 @@ means our own pilot cannot yet distinguish "EnterpriseSynth generalizes better" 
 knows," and only a genuinely private, unpublished spec (§5.2's cold-start validation set, not yet
 built) can settle that.
 
-### 10.4 Positioning Relative to AgentInstruct
+### 11.4 Positioning Relative to AgentInstruct
 
 We adapted AgentInstruct's agentic-flow architecture rather than starting from scratch because it
 is the only reviewed method that is both agentic and execution-free. The two changes we made —
@@ -1236,9 +1301,36 @@ model-based checking) though we arrived at the model-based layer later, as an ex
 (A5) rather than a built-in default — a design choice that let us measure its marginal value and
 cost separately, which §6.6.1 shows was worth doing.
 
+### 11.5 Binary Tool Selection Accuracy Overstates Practical Quality
+
+Every headline number in this paper up to this point is Tool Selection Accuracy: did the model
+choose the right endpoint. §10's LLM-as-a-judge evaluation tests whether that is the right
+question to be asking. Using an independent LLM-based evaluator (Claude Sonnet 5, scoring intent
+match, argument correctness, missing parameters, and reasoning quality on a 1–5 scale, plus a
+primary-error classification), we judged the EnterpriseSynth-tuned model's actual predictions on
+47 held-out examples across Zoom, DigitalOcean, and Spotify.
+
+| Metric | Correct (%) |
+| --- | --- |
+| Binary Tool Selection Accuracy | 48.9% (23/47) |
+| LLM-judge: fully correct (no classified error) | 21.3% (10/47) |
+
+Although EnterpriseSynth substantially improves Tool Selection Accuracy, our semantic evaluation
+reveals that endpoint selection alone is insufficient to characterize practical API generation
+quality. Only 21.3% of generated invocations were judged to be fully correct despite 48.9% being
+classified as correct under the binary endpoint metric. In particular, 61% of endpoint-correct
+predictions (14 of 23) contained semantic deficiencies such as omitted required parameters or
+invalid argument values — most commonly missing required parameters (23.4% of all judged
+examples) and outright wrong tool selection (34.0%), with hallucinated parameters (6.4%) and
+incorrect argument values (4.3%) accounting for the remainder. These findings suggest that future
+evaluations of API-generation systems should complement endpoint-level accuracy with
+argument-level semantic correctness to better reflect deployment readiness. We report this
+against ourselves, not a competing method: every Tool Selection Accuracy number elsewhere in this
+document should be read as an upper bound on practical correctness, not an estimate of it.
+
 ---
 
-## 11. Limitations
+## 12. Limitations
 
 1. **Pilot scale throughout.** All five experiments and five ablations run on 3–5 real APIs and
    45–89 examples each, not the full ~65-spec stratified sample specified in §5.2. Every
@@ -1279,7 +1371,7 @@ cost separately, which §6.6.1 shows was worth doing.
 
 ---
 
-## 12. Conclusion
+## 13. Conclusion
 
 We presented EnterpriseSynth, a schema-aware, zero-execution pipeline that ingests an OpenAPI
 specification and jointly emits verified SFT trajectories and a paired evaluation dataset,
@@ -1306,7 +1398,7 @@ than being assumed into it.
 
 ---
 
-## 13. Timeline
+## 14. Timeline
 
 | Date | Milestone |
 | --- | --- |
@@ -1316,7 +1408,7 @@ than being assumed into it.
 
 ---
 
-## 14. Open Items
+## 15. Open Items
 
 - ~~Resolve the EnterpriseBench naming collision~~ — resolved: renamed to `EnterpriseSynth-Eval` (see flag at top).
 - Verify per-spec licensing before redistributing any derived dataset built on APIs.guru/ToolBench

@@ -6,9 +6,17 @@ Adds two more held-out APIs never used in any training data or prior experiment:
 (290 endpoints) and Spotify (88 endpoints). Trains each of the three models (base/untuned,
 Self-Instruct-tuned, EnterpriseSynth-tuned) ONCE, then evaluates all three against Zoom +
 DigitalOcean + Spotify -- three independent held-out draws instead of one.
+
+Multi-seed mode (--seed N): reuses the committed held-out eval sets (generating them once if
+missing) rather than regenerating them via fresh API calls every run -- eval *questions* changing
+between runs would confound "the model's behavior varies" with "the eval set varies", which is
+not what a seed sweep is supposed to isolate. Only the LoRA training's own randomness (adapter
+weight init) is varied via --seed. Results are written to a seed-specific file so multiple runs
+can be aggregated afterward (see scripts/aggregate_multi_seed_scaling.py).
 """
 from __future__ import annotations
 
+import argparse
 import json
 import random
 import sys
@@ -28,7 +36,7 @@ from enterprisesynth.verifier import SchemaVerificationEngine  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLE_SIZE = 8
 INTENTS_PER_ENDPOINT = 2
-SEED = 42
+SEED = 42  # controls held-out eval-set sampling only (fixed across all seeded runs, by design)
 NEW_HELDOUT_APIS = {
     "DigitalOcean": "data/specs/digitalocean.json",
     "Spotify": "data/specs/spotify.json",
@@ -68,10 +76,11 @@ def build_heldout_eval_set(spec_path: str) -> tuple[list[dict], object]:
     return eval_examples, schema
 
 
-def main() -> None:
+def main(train_seed: int) -> None:
     out_dir = ROOT / "data" / "generated"
 
-    # 1. Build held-out eval sets for the two new APIs (Zoom's already exists).
+    # 1. Load held-out eval sets for all three APIs -- reused as-is if already committed, so a
+    # multi-seed sweep varies only training randomness, not the eval questions themselves.
     heldout_sets = {}
     with open(out_dir / "experiment5_heldout_eval.json") as f:
         heldout_sets["Zoom"] = json.load(f)
@@ -80,12 +89,20 @@ def main() -> None:
     schemas = {"Zoom": zoom_schema}
 
     for api_name, spec_path in NEW_HELDOUT_APIS.items():
-        print(f"Generating held-out eval set for {api_name}...")
-        eval_set, schema = build_heldout_eval_set(spec_path)
+        cache_path = out_dir / f"experiment5_heldout_eval_{api_name.lower()}.json"
+        if cache_path.exists():
+            print(f"Reusing existing held-out eval set for {api_name} ({cache_path.name})")
+            with open(cache_path) as f:
+                eval_set = json.load(f)
+            with open(ROOT / spec_path) as f:
+                schema = SchemaParser().parse(json.load(f))
+        else:
+            print(f"Generating held-out eval set for {api_name} (none committed yet)...")
+            eval_set, schema = build_heldout_eval_set(spec_path)
+            with open(cache_path, "w") as f:
+                json.dump(eval_set, f, indent=2)
         heldout_sets[api_name] = eval_set
         schemas[api_name] = schema
-        with open(out_dir / f"experiment5_heldout_eval_{api_name.lower()}.json", "w") as f:
-            json.dump(eval_set, f, indent=2)
 
     # 2. Load the three training sets.
     with open(out_dir / "experiment5_sft_train.json") as f:
@@ -123,8 +140,12 @@ def main() -> None:
             }
         )
 
-    # 3. Train each model ONCE.
-    print(f"\nLoading {MODEL_NAME} on {DEVICE}...")
+    # 3. Train each model ONCE, with training-randomness controlled by train_seed (LoRA adapter
+    # weight init is the only unseeded source of variance in finetune.py's train_lora).
+    print(f"\nTraining seed for this run: {train_seed}")
+    torch.manual_seed(train_seed)
+
+    print(f"Loading {MODEL_NAME} on {DEVICE}...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -151,8 +172,10 @@ def main() -> None:
             "enterprisesynth": evaluate(enterprisesynth_model, tokenizer, eval_set, verifier),
         }
 
-    with open(out_dir / "experiment5_multi_api_results.json", "w") as f:
+    out_path = out_dir / f"experiment5_multi_api_results_seed{train_seed}.json"
+    with open(out_path, "w") as f:
         json.dump(results, f, indent=2)
+    print(f"\nWrote {out_path}")
 
     print("\n=== SUMMARY: Tool Selection Accuracy by held-out API ===")
     summary = []
@@ -169,4 +192,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser_cli = argparse.ArgumentParser()
+    parser_cli.add_argument(
+        "--seed", type=int, default=42, help="Training-randomness seed (LoRA init)."
+    )
+    args = parser_cli.parse_args()
+    main(train_seed=args.seed)
