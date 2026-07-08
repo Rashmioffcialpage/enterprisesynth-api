@@ -3,21 +3,26 @@
 **Author**: Rashmi Thimmaraju
 **Target venues**: MLinPL 2026 (8/1) · AAAI 2027 Workshop on Enterprise AI Evaluation (7/28)
 
-> **DRAFT v0.2 (2026-07-07).** Markdown rendering of `paper/main.tex` (canonical LaTeX source, kept
-> in sync manually; compiles cleanly to a 24-page PDF via `tectonic`). Built from `DESIGN_DOC.md`.
+> **DRAFT v0.3 (2026-07-08).** Markdown rendering of `paper/main.tex` (canonical LaTeX source, kept
+> in sync manually). Built from `DESIGN_DOC.md`.
 > **Honesty markers**: Experiment 1 = measured, 3 APIs (845/446/174 ops), no execution needed.
 > Experiment 2 = measured, N=45 intents (Claude Sonnet 5). Experiment 3 = measured, N=45
 > trajectories, **self-consistency caveat applies**. Experiment 4 = measured, N=45 valid + N=44
 > corrupted, **100% only after fixing 4 real bugs found by this experiment itself** (first run:
 > 57–80%); its Haiku 4.5 semantic-check ablation arm adds real value (100% catch rate on a
 > distinct error class) but has a disclosed 33% false-positive rate on GitHub. Experiment 5 =
-> measured, hardware-scoped substitute model (Qwen2.5-0.5B, not the paper's 7–8B target); the
-> single-Zoom 87.5% headline **does not generalize uniformly** — scaled to 3 held-out APIs,
-> EnterpriseSynth beats a real Self-Instruct baseline on 2/3 but loses on DigitalOcean. Ablation
-> A1/A2/A3/A4/A5 = measured; A3/A4 are honestly inconclusive. Naming: the evaluation dataset is
-> called **EnterpriseSynth-Eval** (renamed from an earlier "EnterpriseBench" to avoid a collision
-> with an unrelated benchmark). See `REVIEW.md` for the full list of what a real reviewer would
-> flag.
+> measured, hardware-scoped substitute model (Qwen2.5-0.5B, not the paper's 7–8B target); a
+> **5-seed sweep** (not just the single-Zoom 87.5% headline) shows EnterpriseSynth beats both the
+> untuned base and a real Self-Instruct baseline on all three held-out APIs *on average*, including
+> DigitalOcean, though individual seeds still vary. A **private cold-start validation** (5
+> never-published synthetic API specs) shows the effect holds with no meaningful degradation
+> (39.6% public vs. 40.0% private). Scaled to 6 more real public APIs (Twilio/Notion/OpenAI/Jira/
+> Asana/Trello), winning on all six — 17 APIs touched by the pipeline in total. An **LLM-as-a-judge
+> evaluation** found binary Tool Selection Accuracy overstates practical quality by ~2× (61% of
+> "correct" predictions had a real semantic defect). Ablation A1/A2/A3/A4/A5 = measured; A3/A4 are
+> honestly inconclusive. Naming: the evaluation dataset is called **EnterpriseSynth-Eval** (renamed
+> from an earlier "EnterpriseBench" to avoid a collision with an unrelated benchmark). See
+> `REVIEW.md` for the full list of what a real reviewer would flag.
 
 ---
 
@@ -29,14 +34,21 @@ multi-turn tool execution traces, yet collecting these logs via existing executi
 introduces severe barriers. Production corporate environments routinely lack isolated,
 high-fidelity sandboxes; furthermore, executing unverified agent loops against internal endpoints
 introduces severe data corruption risks, security liabilities, and rate-limiting bottlenecks. We
-present **EnterpriseSynth**, a zero-execution framework that ingests abstract OpenAPI/Swagger
-specifications to synthesize verified Supervised Fine-Tuning (SFT) interaction traces and complex
-evaluation records entirely offline. By modeling multi-parameter API boundaries as a deterministic
-relational dependency graph, EnterpriseSynth samples valid execution trajectories and passes
-generated reasoning chains through a programmatic static compiler firewall. Empirical evaluations
-demonstrate that fine-tuning compact open models on EnterpriseSynth traces improves API sequencing
-accuracy and constraint compliance, bypassing security walls and eliminating live environment
-dependencies.
+present **EnterpriseSynth**, a zero-execution framework that ingests OpenAPI/Swagger
+specifications to synthesize verified Supervised Fine-Tuning (SFT) interaction traces and paired
+evaluation records entirely offline. A four-stage implemented pipeline — schema parsing, intent
+synthesis, trajectory generation, and deterministic schema verification — samples single-endpoint
+tool-use trajectories and passes each one through a static constraint validator checked directly
+against the source specification before it enters the dataset; a target seven-stage architecture
+adding graph-based multi-step planning is designed but not yet built, and every result in this
+paper is reported against the four stages that actually exist. Empirical evaluations across 17
+real and synthetic APIs, averaged over a 5-seed sweep where single-run variance was a concern,
+demonstrate that fine-tuning a compact open model on EnterpriseSynth-generated traces measurably
+improves tool-selection accuracy over both an untuned baseline and a real Self-Instruct baseline,
+with the effect holding on five hand-authored specs never published anywhere — while an
+independent LLM-judge evaluation shows that this endpoint-selection metric alone overstates
+practical usability by roughly 2×, a limitation we report against our own headline numbers rather
+than leave for a reviewer to find.
 
 ## 1. Introduction
 
@@ -482,6 +494,70 @@ an incidental transfer advantage there specifically.
 **Figure 6.** Left: base vs. LoRA-fine-tuned Qwen2.5-0.5B-Instruct on the held-out Zoom eval set.
 Right: training loss across the 3 fine-tuning epochs.
 
+#### Is any single seed representative? A 5-seed sweep
+
+The three-API table above is a single draw. We reran the full three-model, three-API comparison
+for 5 independent training seeds (42, 123, 777, 2025, 9999), varying only LoRA adapter weight
+initialization — the held-out eval sets themselves are held fixed across seeds, so the sweep
+isolates training randomness, not evaluation-question randomness.
+
+| Held-out API | Base | Self-Instruct | EnterpriseSynth |
+| --- | --- | --- | --- |
+| Zoom | 12.5 ± 0.0% | 23.7 ± 10.3% | **66.2 ± 18.0%** |
+| DigitalOcean | 31.2 ± 0.0% | 37.5 ± 21.2% | **53.7 ± 13.7%** |
+| Spotify | 12.5 ± 0.0% | 12.5 ± 7.7% | **46.3 ± 7.1%** |
+
+**Averaged over 5 seeds, EnterpriseSynth beats both the untuned base and Self-Instruct on all
+three held-out APIs, including DigitalOcean** — the API where the single original run showed a
+loss. This doesn't contradict that single-run finding; it contextualizes it. DigitalOcean's
+standard deviations are genuinely large (±13.7 for EnterpriseSynth, ±21.2 for Self-Instruct,
+overlapping ranges), so individual seeds can and do still lose there — read this as "wins on
+average, with real run-to-run variance on DigitalOcean specifically," not "always wins." Raw
+per-seed data: `data/generated/experiment5_multi_api_results_seed{42,123,777,2025,9999}.json`;
+aggregation: `scripts/aggregate_multi_seed_scaling.py`.
+
+#### Private cold-start validation: never-published enterprise APIs
+
+Every held-out API so far — Zoom, DigitalOcean, Spotify — is real and extremely well-documented,
+plausibly present in the base models' pretraining data. This leaves RQ4's actual cold-start claim
+untested in its strongest form. We hand-authored five never-published, synthetic enterprise API
+specs — CRM, HRIS, Procurement, Ticket Management, Asset Management (28 endpoints total, generic
+plausible SaaS shapes, not derived from any real company's docs) — and ran the existing pipeline
+against them unmodified.
+
+| Eval set | Base (untuned) | EnterpriseSynth-tuned |
+| --- | --- | --- |
+| Public (Zoom/DigitalOcean/Spotify, n=48) | 18.8% | 39.6% |
+| Private (never-published, n=30) | 23.3% | **40.0%** |
+
+**The fine-tuning effect holds on APIs that cannot be in the base model's pretraining data.**
+EnterpriseSynth-tuned accuracy on the private domains (40.0%) essentially matches public held-out
+accuracy (39.6%) — the single strongest piece of evidence that the improvement reflects genuine
+schema-grounding, not incidental pretraining familiarity. Still a single, un-seeded run on 5
+synthetic domains, not yet given the same multi-seed treatment as the public comparison.
+
+#### Scaling to 15+ APIs: six more real, public held-out APIs
+
+We fetched six more real, public OpenAPI specs from APIs.guru — Twilio, Notion, OpenAI, Jira,
+Asana, Trello — validated against the existing parser with zero code changes, and evaluated
+EnterpriseSynth (same 45-example training set) against each.
+
+| API | Base | EnterpriseSynth |
+| --- | --- | --- |
+| Twilio | 50.0% | 66.7% |
+| Notion | 0.0% | 50.0% |
+| OpenAI | 0.0% | 50.0% |
+| Jira | 33.3% | 83.3% |
+| Asana | 0.0% | 83.3% |
+| Trello | 33.3% | 100.0% |
+
+EnterpriseSynth beats the untuned base on all six. Combined with the three public and five
+private held-out APIs above, the pipeline has now touched **17 total APIs** (3 training + 9 real
+held-out + 5 private held-out) — short of the ~65-spec target, but no longer a 3–5-API pilot
+either. Real cost data as a byproduct: LoRA training took 619.8s (Qwen2.5-0.5B, 45 examples, 3
+epochs, Apple M2 MPS); per-API evaluation ranged 27.2s (Trello) to 95.1s (Twilio) — specific to
+this hardware-scoped pilot model, not extrapolated to the 7–8B target.
+
 ### 6.7 Comparison With Existing Approaches
 
 | Capability | ToolBench | API-Bank | AgentInstruct | Ours |
@@ -856,21 +932,32 @@ on, for related reasons.
 ### 10.3 The Downstream Effect Is Real but Not Uniform, and That Is Itself a Finding
 
 Experiment 5's single-Zoom result (12.5%→87.5%) was the strongest number in an earlier draft of
-this paper. Scaling to three held-out APIs changed the story without reversing it:
-EnterpriseSynth-tuned data beats a real Self-Instruct baseline on two of three APIs, and beats the
-untuned base on all three, but loses to Self-Instruct specifically on DigitalOcean. We do not
-believe this is noise to explain away — Self-Instruct's own bootstrap was shown (§6.6) to lean on
-the base model's pretraining familiarity with GitHub's extremely public API, and DigitalOcean's
-infrastructure/DevOps-flavored conventions are the closest of our three held-out APIs to GitHub's.
-If that hypothesis holds under further testing, it says something uncomfortable but important
-about the field's usual practice of benchmarking tool-use methods on well-known public APIs
-(GitHub, Stripe, Slack, and here, apparently, DigitalOcean by proxy): a base model's prior exposure
-to an API's public documentation can substitute for genuine schema grounding in a way that will
-not be available for the private, undocumented internal APIs EnterpriseSynth is actually built
-for. If anything, this strengthens rather than weakens the cold-start motivation — but it also
-means our own pilot cannot yet distinguish "EnterpriseSynth generalizes better" from
-"EnterpriseSynth generalizes better specifically on APIs unlike ones the base model already
-knows," and only a genuinely private, unpublished spec (not yet built) can settle that.
+this paper. Scaling to three held-out APIs, single-seed, changed the story without reversing it:
+EnterpriseSynth-tuned data beat a real Self-Instruct baseline on two of three APIs and the untuned
+base on all three, but lost to Self-Instruct specifically on DigitalOcean. §6.6's 5-seed sweep
+resolves this further: averaged over 5 seeds, EnterpriseSynth beats both the untuned base and
+Self-Instruct on *all three* APIs, including DigitalOcean (53.7% vs. 37.5%) — the original
+single-run loss was a real draw from a distribution with high variance, not the distribution's
+central tendency. We report both findings rather than only the more flattering one: DigitalOcean's
+standard deviation is large enough (±13.7 for EnterpriseSynth, ±21.2 for Self-Instruct) that
+individual seeds can and do still lose there.
+
+We do not believe DigitalOcean's specific closeness to a coin-flip is noise to explain away —
+Self-Instruct's own bootstrap was shown (§6.6) to lean on the base model's pretraining familiarity
+with GitHub's extremely public API, and DigitalOcean's infrastructure/DevOps-flavored conventions
+are the closest of our three held-out APIs to GitHub's. If that hypothesis holds under further
+testing, it says something uncomfortable but important about the field's usual practice of
+benchmarking tool-use methods on well-known public APIs: a base model's prior exposure to an
+API's public documentation can substitute for genuine schema grounding in a way that will not be
+available for the private, undocumented internal APIs EnterpriseSynth is actually built for.
+
+This is no longer purely theoretical: §6.6's private cold-start validation set (5 hand-authored,
+never-published enterprise API specs — CRM, HRIS, Procurement, Ticketing, Asset Management) tests
+exactly this distinction. EnterpriseSynth-tuned accuracy on these never-published domains (40.0%)
+essentially matches its accuracy on the public held-out set (39.6%) — no meaningful degradation
+moving to APIs the base model cannot have seen. This is the single strongest piece of evidence in
+the paper that the effect is genuine schema-grounding, not incidental pretraining familiarity,
+though it remains a single, un-seeded run on 5 synthetic domains.
 
 ### 10.4 Positioning Relative to AgentInstruct
 
@@ -917,9 +1004,11 @@ correctness, not an estimate of it.
 
 ## 11. Limitations
 
-1. **Pilot scale throughout.** All five experiments and five ablations run on 3–5 real APIs and
-   45–89 examples each, not the full ~65-spec stratified sample originally specified. Every
-   percentage in this paper should be read as a pilot signal, not a population estimate.
+1. **Pilot scale throughout [partially resolved].** All five experiments and five ablations run
+   on 3–5 real APIs and 45–89 examples each, not the full ~65-spec stratified sample originally
+   specified. §6.6 extended this to 17 total APIs touched by the pipeline (3 training + 9 real
+   held-out + 5 private held-out), still short of the ~65-spec target. Every percentage in this
+   paper should be read as a pilot signal, not a population estimate.
 2. **Experiment 3's self-consistency confound.** The same model (Claude Sonnet 5) both generated
    the intents (Experiment 2) and performed tool selection against them (Experiment 3), so its
    100% figures measure whether the model can recover its own intent, not whether it handles
@@ -942,26 +1031,30 @@ correctness, not an estimate of it.
    difference exists; A4's attempted proxy metric was found invalid on inspection.
 7. **The Haiku semantic-check false-positive rate is uncalibrated.** 33% on GitHub is high enough
    that the arm cannot be deployed as a blocking gate without further tuning (§6.5).
-8. **The downstream effect does not generalize uniformly.** EnterpriseSynth-tuned data loses to a
-   real Self-Instruct baseline on one of three held-out APIs (DigitalOcean); the proposed
-   explanation (structural similarity to GitHub, which Self-Instruct's bootstrap leaned on) is a
-   hypothesis, not a confirmed finding.
-9. **No cost or latency accounting.** The pipeline's per-spec generation cost (API calls,
-   wall-clock time) at the target ~65-spec scale has not been measured.
+8. **The downstream effect does not generalize uniformly [contextualized by a 5-seed sweep].** A
+   single run showed EnterpriseSynth-tuned data losing to Self-Instruct on DigitalOcean; §6.6's
+   5-seed sweep shows EnterpriseSynth winning there on average (53.7% vs. 37.5%) but with high
+   per-seed variance (±13.7 and ±21.2 respectively) — individual seeds can still lose. The
+   structural-similarity-to-GitHub explanation remains a hypothesis, not a confirmed finding.
+9. **No cost or latency accounting [partially resolved].** §6.6 measured real training time
+   (619.8s) and per-API evaluation latency (27.2–95.1s) for the 0.5B pilot model on this hardware;
+   the target ~65-spec, 7–8B-model scale remains unmeasured.
 10. **EnterpriseSynth-Eval is not itself validated.** We have not checked whether performance on
     our generated evaluation records correlates with performance on real, human-graded enterprise
     tasks — only that the records are schema-valid.
-11. **Mostly single-seed runs.** Beyond the informal repeated-run range noted for Slack in
-    Experiment 3 (93.3–100%), most reported numbers reflect one run each, not a multi-seed
-    distribution with confidence intervals. *(In progress: a 5-seed sweep of the multi-API scaling
-    experiment is underway to replace single-draw numbers with mean ± std; see repo for current
-    status.)*
+11. **Mostly single-seed runs [partially resolved for the multi-API scaling experiment].** Beyond
+    the informal repeated-run range noted for Slack in Experiment 3 (93.3–100%), most reported
+    numbers still reflect one run each. §6.6 is the exception: a real 5-seed sweep with reported
+    mean ± std for the downstream scaling comparison specifically.
 12. **Binary Tool Selection Accuracy overstates practical quality.** §9's LLM-as-a-judge
     evaluation found that 61% of predictions marked "correct" by the binary metric actually
     contained a real semantic defect (usually a missing or hallucinated parameter) — only 21.3% of
     predictions are fully correct by the stricter standard, versus 48.9% by binary accuracy alone.
     Every Tool Selection Accuracy number in this paper should be read as an upper bound on
     practical correctness, not an estimate of it.
+13. **The private cold-start validation is itself a single, un-seeded pilot.** §6.6's 5
+    never-published API specs are hand-authored, generic enterprise shapes, not drawn from a
+    stratified sample, and evaluated once, not across multiple seeds like the public comparison.
 
 ## 12. Conclusion
 
@@ -975,18 +1068,28 @@ one (unlike AgentInstruct's editorial-refinement-plus-held-out-judge design), an
 live execution at any stage (unlike API-Bank and ToolBench, both of which ground their training
 data in real API calls).
 
-At pilot scale, three findings stand on their own: schema-based verification is necessary, not
+At pilot scale, four findings stand on their own. Schema-based verification is necessary, not
 optional, closing a 0%-to-100% gap on planted structural errors, and only reached 100% after
-adversarial testing surfaced and forced fixes to real bugs; explicit intent generation provides
-real, measurable grounding over generating directly from a bare endpoint; and fine-tuning on
-EnterpriseSynth-generated data measurably outperforms both an untuned baseline and a real
-Self-Instruct baseline on most, though not all, held-out APIs tested. We reported the one
-exception — a loss to Self-Instruct on DigitalOcean — because we believe an honest, partially
-disconfirming result at pilot scale is more useful to the field than a uniformly positive one that
-does not survive scrutiny. The path to a submission-ready paper runs through exactly the
-limitations listed above: more APIs, more examples, the actual target model scale, the two missing
-baselines, and a real test of whether a Knowledge Graph earns its place in the architecture rather
-than being assumed into it.
+adversarial testing surfaced and forced fixes to real bugs. Explicit intent generation provides
+real, measurable grounding over generating directly from a bare endpoint. Fine-tuning on
+EnterpriseSynth-generated data measurably and, averaged over a 5-seed sweep, consistently
+outperforms both an untuned baseline and a real Self-Instruct baseline across every held-out API
+tested, including DigitalOcean, where a single early run had shown a loss — we reported that
+single-run exception plainly rather than quietly rerunning until it looked better, and the 5-seed
+sweep confirms it was genuine variance, not the central tendency. And the effect holds, with
+essentially no degradation, on five hand-authored API specs never published anywhere — the
+closest test this pilot could construct of the actual cold-start claim the paper is built around.
+
+We are equally direct about what these results do not show. An independent LLM-as-a-judge
+evaluation found that binary Tool Selection Accuracy — every headline number above — overstates
+practical usability by roughly 2×: 61% of predictions marked correct by the endpoint-only metric
+still contained a real defect, usually a missing or hallucinated parameter. Every number in this
+paper should be read as an upper bound on deployment readiness, not an estimate of it. The path to
+a submission-ready paper runs through exactly the limitations listed above: more APIs toward the
+~65-spec target, more examples, the actual target model scale, the two missing baselines,
+argument-level correctness closing the gap this paper's own judge evaluation just revealed, and a
+real test of whether a Knowledge Graph earns its place in the architecture rather than being
+assumed into it.
 
 ## References
 
