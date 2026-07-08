@@ -46,11 +46,15 @@ baseline (see `paper/related_work_audit.md` §5), not as a primary training sour
 
 ## Cold-start validation set
 
-A small, hand-authored set of synthetic "enterprise-internal" specs (CRM, ticketing, HRIS,
-internal billing), modeled on real enterprise API shapes but not published anywhere. Required
-because public specs (APIs.guru, ToolBench) may already be in pretraining data — evaluating only
-on public specs would undermine RQ4's cold-start generalization claim. Not yet authored; tracked
-as an open item.
+**Built and run** (2026-07-08) — `data/specs/private/`: 5 hand-authored, never-published synthetic
+enterprise specs (CRM, HRIS, Procurement, Ticket Management, Asset Management; 28 endpoints
+total), modeled on plausible enterprise API shapes but not derived from any real company's
+documentation. Required because public specs (APIs.guru, ToolBench) may already be in pretraining
+data — evaluating only on public specs would undermine RQ4's cold-start generalization claim.
+EnterpriseSynth-tuned accuracy on these private specs (40.0%) essentially matches public held-out
+accuracy (39.6%) — see `RESULTS.md`'s "Private cold-start validation" section for the full result.
+Generation script: `scripts/generate_private_specs.py`. Still a single, un-seeded run, unlike the
+5-seed treatment given to the public held-out comparison — a real remaining gap, not a closed one.
 
 ## Split protocol
 
@@ -67,19 +71,25 @@ training data for is the central claim, not just aggregate scale. Proposed proto
 Splitting by **whole API spec** (not by individual generated example) is required — splitting
 within a spec would leak endpoint/schema knowledge across train and test.
 
-## Per-spec generation scale (illustrative target, not yet measured)
+## Per-spec generation scale (pilot measured; scaling with endpoint count still untested)
 
-Each spec produces a variable number of examples depending on its endpoint count and graph
-complexity — e.g., a large spec like GitHub's should be expected to yield on the order of hundreds
-of SFT examples plus a smaller paired evaluation set; a smaller spec like Slack's proportionally
-fewer. Exact per-spec yields depend on the Intent Synthesis Agent's taxonomy breadth and will be
-reported as measured numbers once Stage 3–7 of the pipeline (DESIGN_DOC.md §4) exist, not assumed
-in advance.
+At pilot scale, every API is sampled at a fixed rate regardless of its total endpoint count — 5
+endpoints × 3 intents for the training APIs (GitHub/Stripe/Slack, 45 total), 3 endpoints × 2
+intents per domain for the private/Phase 3 held-out sets (30 and 36 total respectively) — not
+scaled proportionally to a spec's size (GitHub has 845 paths+methods, Slack has 174, both sampled
+identically). Whether yield should scale with endpoint/graph complexity, as originally envisioned
+here, remains genuinely untested; what's measured is real generation reliability at a fixed
+sample size across specs of very different sizes, not a size-proportional yield curve.
 
-## Directory layout (planned)
+## Directory layout (actual)
 
-- `data/specs/` — raw OpenAPI/Swagger spec files (train/val/held-out split tracked in a manifest,
-  not by directory name, so the same fetch script can regenerate any split).
-- `data/generated/train_sft_pool.jsonl` — pipeline output, not hand-edited.
-- `data/generated/eval_records_spec.jsonl` — pipeline output, not hand-edited.
-- `data/enterprise_coldstart/` — the hand-authored synthetic enterprise spec set.
+- `data/specs/` — raw OpenAPI/Swagger spec files: GitHub, Stripe, Slack (training), Zoom,
+  DigitalOcean, Spotify (public held-out) at the top level; `phase3/` (Twilio, Notion, OpenAI,
+  Jira, Asana, Trello — 6 more real public held-out APIs); `private/` (5 hand-authored,
+  never-published synthetic enterprise specs — CRM, HRIS, Procurement, Ticketing, Asset
+  Management). No train/val/held-out split by directory name or manifest — held-out status is
+  tracked by which scripts/experiments reference a given spec, documented in `RESULTS.md`.
+- `data/generated/*.json` — pipeline output, one file per experiment/ablation/phase, not
+  hand-edited. Not `.jsonl` as originally planned here — each script writes a single JSON
+  document (list or dict) matching what that specific experiment needs, documented inline in each
+  script's own docstring.
