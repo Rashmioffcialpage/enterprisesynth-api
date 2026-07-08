@@ -1,8 +1,11 @@
 # EnterpriseSynth: A Schema-Aware Agentic Framework for Generating Verified SFT and Evaluation Datasets from OpenAPI Specifications
 
-**Status:** pilot-scale experiments complete (Experiments 1–5 + Ablation Study A1–A5, plus a real
-Self-Instruct baseline and a 3-API downstream scaling comparison). See `DESIGN_DOC.md` for the
-full design, results, and honest accounting of what is/isn't implemented.
+**Status:** pilot-scale experiments complete and scaled: Experiments 1–5, Ablation Study A1–A5, a
+real Self-Instruct baseline, a 5-seed multi-API scaling sweep, a private never-published-API
+cold-start validation, a 6-API real-spec scale-up (17 APIs touched by the pipeline in total), a
+Case Study section with real pipeline output, and an independent LLM-as-a-judge semantic
+evaluation. See `DESIGN_DOC.md` for the full design, results, and honest accounting of what
+is/isn't implemented.
 
 ## Pitch
 
@@ -13,7 +16,26 @@ existing tool-use training data or eval suite for it.
 
 **What's actually implemented** (four stages, not the aspirational seven — see
 `DESIGN_DOC.md` §4 and §8): API Schema Parser → Intent Synthesis Agent → Trajectory Generator
-→ Schema Verification Engine.
+→ Schema Verification Engine. No Knowledge Graph, no Planner — every generated trajectory is a
+single endpoint call, stated plainly throughout the paper rather than implied otherwise.
+
+## Headline results (all real, reproducible, see below)
+
+- **Verification is necessary, not optional:** 0% → 100% detection of planted structural errors,
+  only reached 100% after adversarial testing surfaced and forced fixes to 4 real bugs.
+- **Fine-tuning effect, 5-seed sweep:** averaged over 5 training seeds, EnterpriseSynth-tuned data
+  beats both an untuned base and a real Self-Instruct baseline on all 3 public held-out APIs
+  (Zoom, DigitalOcean, Spotify) — individual seeds still vary, reported honestly either way.
+- **Private cold-start validation:** on 5 hand-authored, never-published enterprise API specs,
+  EnterpriseSynth-tuned accuracy (40.0%) essentially matches public held-out accuracy (39.6%) — no
+  meaningful degradation on APIs the base model cannot have seen in pretraining.
+- **6-API real-spec scale-up:** wins on all 6 new real public APIs tested (Twilio, Notion, OpenAI,
+  Jira, Asana, Trello) — 17 total APIs touched by the pipeline.
+- **The honest caveat on all of the above:** an independent LLM-as-a-judge evaluation found that
+  binary Tool Selection Accuracy overstates practical quality by roughly 2× — 61% of predictions
+  marked "correct" by the endpoint-only metric still had a real defect, usually a missing or
+  hallucinated parameter. Every accuracy number above should be read as an upper bound on
+  deployment readiness, not an estimate of it.
 
 ## Target venues
 
@@ -34,12 +56,17 @@ confusion. See `DESIGN_DOC.md`'s top-of-file note for the full history.
 - `BLOG.md` — companion blog post covering the core thesis and results
 - `paper/` — LaTeX draft (`main.tex`), bibliography, figures, related-work audit
 - `src/enterprisesynth/` — parser, intent agent, trajectory agent, verifier, ablation agents,
-  semantic checker (Haiku ablation), fine-tuning helpers
-- `scripts/` — one script per experiment/ablation/baseline, plus figure and diagram generation
-- `data/specs/` — committed real OpenAPI specs (GitHub, Stripe, Slack, Zoom, DigitalOcean, Spotify)
-- `data/generated/` — committed experiment outputs (JSON)
-- `tests/` — pytest suite (36 tests; 42 with `torch` installed, which unlocks 6 more covering
-  `finetune.py`'s prompt/JSON-extraction helpers -- see `test_finetune.py`)
+  semantic checker (Haiku ablation), LLM-as-a-judge scorer, fine-tuning helpers
+- `scripts/` — one script per experiment/ablation/baseline/scaling phase, plus figure and diagram
+  generation
+- `data/specs/` — committed real OpenAPI specs (GitHub, Stripe, Slack, Zoom, DigitalOcean,
+  Spotify, Twilio, Notion, OpenAI, Jira, Asana, Trello under `phase3/`) plus 5 hand-authored,
+  never-published synthetic enterprise specs under `private/` (CRM, HRIS, Procurement, Ticketing,
+  Asset Management)
+- `data/generated/` — committed experiment outputs (JSON), including all 5 seeds of the
+  multi-API scaling sweep and the LLM-judge results
+- `tests/` — pytest suite (45 tests, all pass with `torch` installed; 39 without it, since
+  `test_finetune.py`'s 6 tests need it — see `test_finetune.py`)
 
 ## Setup
 
@@ -49,8 +76,8 @@ python3 -m venv .venv
 ```
 
 Requires `ANTHROPIC_API_KEY` in your environment (or a `.env` file at the repo root — already
-gitignored) for Experiments 2, 3, 5 and the ablation study, which call Claude Sonnet 5. Experiments
-1 and 4 are pure code, no API key needed.
+gitignored) for Experiments 2, 3, 5, the ablation study, and the LLM-judge evaluation, which call
+Claude Sonnet 5 or Haiku 4.5. Experiments 1 and 4 are pure code, no API key needed.
 
 ## Reproduce Results
 
@@ -91,8 +118,31 @@ Run in order — later scripts depend on earlier ones' output:
 ./.venv/bin/python scripts/run_baseline_selfinstruct_finetune.py
 
 # Scale Experiment 5 to 3 held-out APIs (Zoom, DigitalOcean, Spotify) -- needs ANTHROPIC_API_KEY
-# + torch/transformers/peft; retrains all three models (base/Self-Instruct/EnterpriseSynth) once
-./.venv/bin/python scripts/scale_experiment5_heldout.py
+# + torch/transformers/peft; retrains all three models (base/Self-Instruct/EnterpriseSynth) once.
+# Accepts --seed N (default 42); reuses committed held-out eval sets rather than regenerating them,
+# so a seed sweep varies only training randomness, not the eval questions.
+./.venv/bin/python scripts/scale_experiment5_heldout.py --seed 42
+
+# 5-seed sweep + aggregation (what the paper's mean +/- std table is built from)
+for seed in 42 123 777 2025 9999; do
+  ./.venv/bin/python scripts/scale_experiment5_heldout.py --seed $seed
+done
+./.venv/bin/python scripts/aggregate_multi_seed_scaling.py
+
+# Private cold-start validation: generate the 5 never-published specs (already committed under
+# data/specs/private/, this regenerates them from scratch), build a held-out eval set from them,
+# then evaluate EnterpriseSynth against both the public and private held-out sets
+./.venv/bin/python scripts/generate_private_specs.py
+./.venv/bin/python scripts/build_private_coldstart_eval.py
+./.venv/bin/python scripts/run_private_coldstart_eval.py
+
+# Scale to 6 more real public APIs (Twilio, Notion, OpenAI, Jira, Asana, Trello) via APIs.guru
+./.venv/bin/python scripts/build_phase3_eval.py
+./.venv/bin/python scripts/run_phase3_eval.py
+
+# LLM-as-a-judge semantic evaluation (needs ANTHROPIC_API_KEY; scores real predictions from a
+# committed seed-42 run on intent match/argument correctness/missing parameters/reasoning quality)
+./.venv/bin/python scripts/run_llm_judge_eval.py
 
 # Regenerate all figures from committed data/generated/*.json (no re-run of experiments needed)
 ./.venv/bin/pip install matplotlib
@@ -112,4 +162,16 @@ Run in order — later scripts depend on earlier ones' output:
   real Self-Instruct baseline and scaled Experiment 5 to 3 held-out APIs (Zoom, DigitalOcean,
   Spotify), including the honest DigitalOcean-reversal finding; compiled `paper/main.tex` to PDF
   for the first time and added Discussion/Limitations/Conclusion sections; added `BLOG.md` and
-  the `literature-review/` folder.
+  the `literature-review/` folder; added a Case Study and Qualitative Analysis section using real
+  pipeline output; ran a full-repo audit and fixed every finding (README/REVIEW.md staleness, dead
+  dependencies, a pre-existing section-numbering bug, missing test coverage for the LLM-calling
+  modules).
+- 2026-07-08: Ran a 5-seed sweep of the multi-API scaling experiment, replacing single-draw
+  numbers with real mean ± std; built and validated a private cold-start test set (5
+  never-published synthetic enterprise specs) showing the fine-tuning effect holds on APIs the
+  base model cannot have seen; scaled to 6 more real public APIs via APIs.guru (17 APIs touched by
+  the pipeline in total); built an independent LLM-as-a-judge semantic evaluation (Phase 4) and
+  found that binary Tool Selection Accuracy overstates practical quality by roughly 2× — reported
+  as a limitation against the paper's own headline numbers; fixed a real overclaiming issue in the
+  Abstract itself (described the unimplemented Knowledge Graph as if it were built); fixed a stale
+  leftover sentence claiming the Case Study/Discussion/Conclusion sections were unwritten.
