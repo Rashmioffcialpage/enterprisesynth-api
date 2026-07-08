@@ -8,8 +8,14 @@ list.
 > **Update:** this is a point-in-time snapshot. Since it was written, all five items of the
 > Recommendation section below have been resolved (Self-Instruct baseline run and scaled to 3
 > held-out APIs, §4.4/§7 Haiku ablation-arm inconsistency fixed by actually implementing it, PDF
-> compiled and visually checked, EnterpriseBench naming collision resolved). See `RESULTS.md` for
-> current numbers — the recommendations below are left as originally written for the record.
+> compiled and visually checked, EnterpriseBench naming collision resolved). Beyond that original
+> list: the single-draw DigitalOcean result was given a real 5-seed treatment (mean ± std,
+> EnterpriseSynth wins on average there too), a private never-published-API cold-start validation
+> was built and run (the paper's strongest new evidence for RQ4), 6 more real APIs were added
+> (17 total), and an independent LLM-as-a-judge evaluation found — and disclosed against the
+> paper's own headline numbers — that binary Tool Selection Accuracy overstates practical quality
+> by roughly 2×. See `RESULTS.md` for current numbers — the recommendations below are left as
+> originally written for the record.
 
 ## Strengths
 
@@ -35,10 +41,14 @@ list.
    AAAI/MLinPL reviewers will ask whether any of these effects (especially Experiment 5's
    12.5%→87.5%) survive at the paper's stated target scale (~65 specs, 7–8B model). Right now
    there is no evidence either way — this is the single biggest risk to the paper's central claim.
-   **[Partially resolved since this review was written]** the single-held-out-API framing is now
-   stale — Experiment 5 scaled to 3 held-out APIs (Zoom, DigitalOcean, Spotify), and the effect
-   turned out non-uniform (a loss on DigitalOcean), which is a more informative answer than "no
-   evidence either way" but still doesn't reach the paper's target scale.
+   **[Further resolved since this review was written]** the single-held-out-API framing is now
+   stale twice over — Experiment 5 first scaled to 3 held-out APIs (Zoom, DigitalOcean, Spotify;
+   the single-run effect turned out non-uniform, a loss on DigitalOcean), then to 17 total APIs (9
+   real held-out + 5 private never-published + 3 training), and a 5-seed sweep replaced the
+   single-draw numbers with mean ± std — averaged over 5 seeds, EnterpriseSynth wins on all three
+   original APIs including DigitalOcean, though individual seeds still vary there. Still short of
+   the paper's ~65-spec target scale, but "no evidence either way" is no longer an accurate
+   description of where this stands.
 2. **Experiment 3's headline numbers (100%/100%) are self-consistency, not generalization**,
    because the same model generated both the intents and the tool selections. The paper says this
    plainly, but a reviewer will still discount these numbers heavily until an independently-
@@ -81,6 +91,24 @@ list.
    Study (§7). Resolved by implementing it as Ablation A5: confirms the deterministic gate is
    blind to semantic errors by construction, and that Haiku catches 100% of them but with a real,
    disclosed 33% false-positive rate on GitHub (see `RESULTS.md`).
+10. **[New finding, added after this review was written]** Every Tool Selection Accuracy number in
+    the paper — the metric behind every headline claim — measures endpoint selection only, not
+    whether the resulting call is usable. An independent LLM-as-a-judge evaluation (§10 of
+    `paper/main.tex`) found that 61% of predictions marked "correct" by the binary metric actually
+    contained a real defect (usually a missing or hallucinated parameter): only 21.3% of
+    predictions are fully correct by the stricter standard, vs. 48.9% by binary accuracy alone.
+    This is disclosed directly in the paper's own Discussion, Limitations, and Conclusion sections
+    rather than left for a reviewer to discover — but it does mean a reviewer who reads only the
+    Results section and not the Discussion will come away with an inflated sense of how usable
+    these generated trajectories actually are. Recommend making sure the abstract-level framing
+    (which now does mention this) stays prominent in any future revision.
+11. **The private cold-start validation (the paper's strongest new claim) is itself unreplicated.**
+    §6.7.3 of `DESIGN_DOC.md` reports a single run on 5 hand-authored, never-published API specs
+    showing the fine-tuning effect holds with no meaningful degradation versus public APIs. This
+    is exactly the kind of headline number ("87.5% on Zoom", "40.0% on private APIs") that Weakness
+    1's history shows should not be trusted from a single draw. A 5-seed treatment of this specific
+    result, matching what was already done for the public comparison, would substantially
+    strengthen the paper's central claim rather than leave it resting on one run.
 
 ## Recommendation
 

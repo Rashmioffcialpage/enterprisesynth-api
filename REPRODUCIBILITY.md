@@ -15,12 +15,17 @@ treated as final paper evidence.
 | Experiment 5 (downstream fine-tuning) | Measured, needs API key + local torch/transformers/peft | `scripts/run_experiment5.py` | Yes, for the substitute model (Qwen2.5-0.5B) explicitly, not yet for the paper's 7–8B target |
 | Ablation A1/A3/A4 | Measured, needs API key | `scripts/run_ablation_study.py` | Yes, with A3/A4's "inconclusive" framing preserved |
 | Ablation A2 | Measured, reuses Experiment 4's data, no re-run needed | (no script — see `RESULTS.md`) | Yes |
+| Ablation A5 (Haiku semantic check) | Measured, needs API key + Exp 3 output | `scripts/run_ablation_haiku.py` | Yes, with the 33% GitHub false-positive rate disclosed |
 | Knowledge Graph / Planner / Response Schema ablations | **Not run — components don't exist** | n/a | No — see `DESIGN_DOC.md` §8.1 for why these were dropped rather than faked |
+| 5-seed multi-API scaling sweep | Measured, needs API key (first seed only; rest reuse committed eval sets) + local torch | `scripts/scale_experiment5_heldout.py --seed N` + `scripts/aggregate_multi_seed_scaling.py` | Yes — mean ± std across 5 real seeds, not a single draw |
+| Private cold-start validation | Measured, needs API key + local torch; single run, not seed-swept | `scripts/generate_private_specs.py`, `build_private_coldstart_eval.py`, `run_private_coldstart_eval.py` | Yes, with the "single un-seeded run" caveat explicit in `RESULTS.md` |
+| 6-API scale-up (Twilio/Notion/OpenAI/Jira/Asana/Trello) | Measured, needs API key + local torch | `scripts/build_phase3_eval.py`, `run_phase3_eval.py` | Yes |
+| LLM-as-a-judge semantic evaluation | Measured, needs API key; judges a committed seed-42 run | `scripts/run_llm_judge_eval.py` | Yes — the 2× overstatement finding is real, independently-scored data |
 
 The most important boundary: every script above produces **real measured numbers from a real
 model call or real code path**, never a projected or illustrative number. Where a result is
-pilot-scale (3–4 APIs, tens of examples), that is stated explicitly in `RESULTS.md`, not implied
-to be larger.
+pilot-scale (17 APIs, tens of examples per experiment), that is stated explicitly in `RESULTS.md`,
+not implied to be larger.
 
 ## Environment
 
@@ -29,9 +34,11 @@ python3 -m venv .venv
 ./.venv/bin/pip install -e ".[dev]"
 ```
 
-CI (`.github/workflows/ci.yml`) runs the API-independent test suite (`tests/`, 16 tests) on
-Python 3.10/3.11/3.12 on every push/PR to `main`. It does **not** run the experiment scripts,
-since those need a funded `ANTHROPIC_API_KEY` that isn't configured as a repo secret.
+CI (`.github/workflows/ci.yml`) runs the API-independent test suite (`tests/`, 45 tests with
+`torch` installed locally, 39 in CI without it — `test_finetune.py`'s 6 tests are skipped via
+`pytest.importorskip`) on Python 3.10/3.11/3.12 on every push/PR to `main`. It does **not** run
+the experiment scripts, since those need a funded `ANTHROPIC_API_KEY` that isn't configured as a
+repo secret.
 
 ## External Requirements
 
@@ -81,6 +88,39 @@ set -a && source .env && set +a
 ./.venv/bin/python scripts/make_figures.py
 ```
 
+### 5. 5-seed multi-API scaling sweep
+
+Needs a funded API key on the first seed only, several minutes per seed, local
+torch/transformers/peft required.
+
+```bash
+for seed in 42 123 777 2025 9999; do
+  ./.venv/bin/python scripts/scale_experiment5_heldout.py --seed $seed
+done
+./.venv/bin/python scripts/aggregate_multi_seed_scaling.py
+```
+
+Held-out eval sets (Zoom/DigitalOcean/Spotify) are committed and reused across seeds automatically
+— only training randomness (LoRA weight init) varies. Delete the corresponding
+`data/generated/experiment5_heldout_eval_*.json` files first if you want fresh eval questions too
+(not recommended — that would conflate eval-question variance with training variance).
+
+### 6. Private cold-start validation (needs a funded API key + local torch)
+
+```bash
+./.venv/bin/python scripts/generate_private_specs.py       # regenerates the 5 specs from scratch
+./.venv/bin/python scripts/build_private_coldstart_eval.py
+./.venv/bin/python scripts/run_private_coldstart_eval.py
+```
+
+### 7. 6-API scale-up + LLM-judge evaluation (needs a funded API key + local torch for the first)
+
+```bash
+./.venv/bin/python scripts/build_phase3_eval.py
+./.venv/bin/python scripts/run_phase3_eval.py
+./.venv/bin/python scripts/run_llm_judge_eval.py   # no torch needed, judges a committed seed-42 run
+```
+
 ## Known Non-Determinism
 
 - Experiments 2/3/5 and the ablation study call Claude Sonnet 5 without a fixed seed — exact
@@ -88,5 +128,14 @@ set -a && source .env && set +a
   (coverage, tool-selection accuracy) have been stable within a few percentage points across the
   repeated runs performed during development (see `RESULTS.md`'s note on Slack's 93.3–100% range
   in Experiment 3).
+- `scripts/scale_experiment5_heldout.py`'s **training randomness** (LoRA adapter weight init) is
+  now controllable via `--seed N` — this is exactly what the 5-seed sweep exists to quantify
+  rather than hide. Before this flag existed, DigitalOcean's single-run result (a loss to
+  Self-Instruct) was reported as-is rather than rerun until it looked better; the 5-seed sweep
+  later showed that specific draw was real but not representative of the average.
+- **Lesson from building the LLM-judge evaluation:** its first version silently dropped 35% of
+  judge calls (`max_tokens` too small for Claude's internal reasoning to finish before writing the
+  answer) — always check an evaluation script's own success/parse rate, not just its headline
+  output, before trusting it.
 - Endpoint/distractor **sampling** is seeded (`SEED = 42` in each script) and is fully
   deterministic given the same spec file.

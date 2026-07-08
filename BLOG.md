@@ -127,25 +127,65 @@ not the distribution.
 
 ---
 
+## Update, July 8: we ran it 5 times, built a real cold-start test, and found our own metric lies a little
+
+Everything above was written after a single run per experiment. Since then we did three things a
+single-run pilot can't skip if it wants to be believed:
+
+**We reran the multi-API comparison 5 times, seeds 42/123/777/2025/9999, varying only training
+randomness.** The DigitalOcean loss above was real — it also wasn't the average. Across 5 seeds,
+EnterpriseSynth beats both the untuned base and Self-Instruct on all three held-out APIs,
+including DigitalOcean (53.7% vs. 37.5%, averaged) — but the variance is genuinely large
+(±13.7 / ±21.2), so individual seeds still lose there sometimes. Both facts are true at once, and
+we're reporting both instead of picking the flattering one.
+
+**We built the cold-start test we didn't have before.** Every held-out API up to this point —
+Zoom, DigitalOcean, Spotify — is a real, extremely well-documented public API a base model may
+already half-know. So we hand-authored 5 synthetic enterprise API specs that don't exist anywhere
+publicly (a fake CRM, HRIS, procurement system, ticketing system, asset registry) and ran the
+identical pipeline against them. EnterpriseSynth-tuned accuracy on these never-published APIs
+(40.0%) matches accuracy on the public ones (39.6%) — no degradation. This is the closest thing
+we have to actually testing the cold-start claim in the headline, rather than a proxy for it.
+
+**We asked an independent judge whether "correct" actually means correct, and it mostly doesn't.**
+Every accuracy number in this post is Tool Selection Accuracy — did the model pick the right
+endpoint. It says nothing about whether the call it produced is usable. We had Claude score real
+predictions on intent match, argument correctness, missing parameters, and reasoning quality, plus
+classify the primary error. Result: of predictions marked "correct" by Tool Selection Accuracy,
+**61% still had a real defect** — usually a missing or hallucinated parameter. Only 21.3% of
+predictions are fully correct by the stricter standard, not the 48.9% the binary metric implies.
+**Read every accuracy number above as an upper bound on usability, not an estimate of it.** We're
+telling you this about our own headline metric for the same reason we told you about the
+DigitalOcean loss: a result you can't poke holes in yourself isn't one you should trust either.
+
+Also scaled to 6 more real APIs (Twilio, Notion, OpenAI, Jira, Asana, Trello) via APIs.guru — wins
+on all 6, 17 APIs touched by the pipeline now, and picked up real training/eval latency numbers
+(619.8s to fine-tune, 27–95s per API to evaluate) as a byproduct of doing it.
+
 ## What we're releasing
 
 **EnterpriseSynth** is open source at
-[github.com/Rashmioffcialpage/enterprisesynth-api](https://github.com/Rashmioffcialpage/enterprisesynth-api).
+[github.com/Rashmioffcialpage/enterprisesynth-api](https://github.com/Rashmioffcialpage/enterprisesynth-api)
+(also mirrored at
+[github.com/anote-ai/Research-Enterprise-Synth-API](https://github.com/anote-ai/Research-Enterprise-Synth-API)).
 It includes the four-stage pipeline (parser, intent agent, trajectory generator, verifier), the
 adversarial verification test harness that found the four bugs above, a real Self-Instruct
-baseline implementation, the multi-API downstream fine-tuning evaluation, and a full ablation
+baseline implementation, the 5-seed multi-API downstream fine-tuning evaluation, a private
+never-published-API cold-start test, an LLM-as-a-judge semantic evaluation, and a full ablation
 study scoped strictly to components that actually exist in the code — no ablating modules that
-were never built. 21 tests, all real specs (GitHub, Stripe, Slack, Zoom, DigitalOcean, Spotify)
-committed alongside the generated data.
+were never built. 45 tests, 17 real and synthetic API specs committed alongside all the generated
+data, including every one of the 5 seed runs.
 
 ---
 
 ## The one-sentence summary
 
 A deterministic schema gate closes a verification gap from 0% to 100% — but only after
-adversarial testing forced four real bug fixes — and fine-tuning on the resulting data beats a
-real Self-Instruct baseline on two of three held-out APIs, loses on the third, and we're telling
-you about the loss because a benchmark that only reports its wins isn't one you should trust.
+adversarial testing forced four real bug fixes — fine-tuning on the resulting data beats a real
+Self-Instruct baseline on average across 5 seeds and on APIs that were never published anywhere,
+and an independent judge found our own headline metric overstates usability by roughly 2×, which
+we're telling you because a benchmark that only reports the numbers that flatter it isn't one you
+should trust.
 
 ---
 

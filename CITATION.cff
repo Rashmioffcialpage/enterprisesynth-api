@@ -3,7 +3,7 @@ message: "If you use EnterpriseSynth, please cite this repository using the meta
 title: "EnterpriseSynth"
 type: software
 version: 0.1.0
-date-released: 2026-07-06
+date-released: 2026-07-08
 abstract: >-
   EnterpriseSynth is a schema-aware agentic framework that ingests OpenAPI/Swagger
   specifications and synthesizes verified Supervised Fine-Tuning (SFT) trajectories and
